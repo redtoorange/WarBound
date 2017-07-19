@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.MoveOrder;
-import com.redtoorange.warbound.Unit;
+import com.redtoorange.warbound.ai.MoveOrder;
+import com.redtoorange.warbound.units.Unit;
 import com.redtoorange.warbound.map.MapTile;
 
 /**
@@ -20,11 +20,15 @@ import com.redtoorange.warbound.map.MapTile;
 public class UnitController {
     public static String TAG = UnitController.class.getSimpleName();
 
+    private PlayerController owner;
+
     private Array<Unit> units;
     private Array<Unit> selectedUnits;
     private ShapeRenderer shapeRenderer;
 
-    public UnitController(){
+    public UnitController( PlayerController owner ){
+        this.owner = owner;
+
         units = new Array< Unit >(  );
         selectedUnits = new Array< Unit >(  );
 
@@ -113,5 +117,9 @@ public class UnitController {
         }
 
         shapeRenderer.end();
+    }
+
+    public PlayerController getOwner() {
+        return owner;
     }
 }

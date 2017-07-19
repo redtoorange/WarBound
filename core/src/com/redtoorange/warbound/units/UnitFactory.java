@@ -1,4 +1,4 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.units;
 
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.redtoorange.warbound.controllers.UnitController;

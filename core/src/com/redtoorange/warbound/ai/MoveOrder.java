@@ -1,9 +1,9 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.ai;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.ai.AStarSearch;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.Unit;
 
 /**
  * MoveOrder.java - Description
@@ -20,7 +20,7 @@ public class MoveOrder extends UnitOrder {
     private MapTile targetTile;
     private MapTile nextTile;
 
-    private Unit unit;
+    private com.redtoorange.warbound.units.Unit unit;
     private Vector2 deltaVelocity = new Vector2( 0, 0 );
 
     private Array<MapTile> path;

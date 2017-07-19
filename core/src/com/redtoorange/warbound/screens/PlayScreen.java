@@ -8,9 +8,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.*;
+import com.redtoorange.warbound.buildings.BuildingFactory;
 import com.redtoorange.warbound.controllers.*;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.UnitFactory;
 
 /**
  * PlayScreen.java - Description
@@ -27,6 +29,8 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
     private MouseClickController clickController;
     private UnitController unitController;
     private BuildingController buildingController;
+    private UIController uiController;
+    private PlayerController playerController;
 
     private ControlState controlState = ControlState.IDLE;
 
@@ -44,6 +48,8 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
     public PlayScreen() {
         super();
 
+        playerController = new PlayerController( 100, 100, 0, 4, 10 );
+        uiController = new UIController( playerController );
         cameraController = new CameraController(25, 25);
 
         batch = new SpriteBatch(  );
@@ -55,13 +61,13 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
         Gdx.input.setInputProcessor( clickController );
         clickController.addListener( this );
 
-        unitController = new UnitController();
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 25 ) ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 20 )  ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  20, 25 )  ) );
+        unitController = new UnitController( playerController );
+        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 25 ) ) );
+        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 20 )  ) );
+        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  20, 25 )  ) );
         unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  20, 20 )  ) );
 
-        buildingController = new BuildingController( mapController, cameraController );
+        buildingController = new BuildingController( playerController, mapController, cameraController );
     }
 
     /**
@@ -97,6 +103,7 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
      */
     private void update( float deltaTime ){
         mapController.update( deltaTime );
+        uiController.update( deltaTime );
 
         cameraController.handleInput( deltaTime );
         unitController.update( deltaTime );
@@ -126,6 +133,8 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
             unitController.renderSelected( cameraController, selectionBoxColor);
         if( controlState == ControlState.BUILDING_SELECTED )
             buildingController.renderSelected( cameraController, selectionBoxColor);
+
+        uiController.draw();
     }
 
 

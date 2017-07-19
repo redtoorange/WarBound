@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.Building;
+import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -18,6 +18,8 @@ import com.redtoorange.warbound.map.MapTile;
  * @version 7/18/2017
  */
 public class BuildingController {
+    private PlayerController owner;
+
     private Array<Building> buildings;
     private Building currentBuilding;
     private boolean placingBuilding;
@@ -26,7 +28,8 @@ public class BuildingController {
     private ShapeRenderer shapeRenderer;
 
 
-    public BuildingController( MapController mapController, CameraController cameraController ){
+    public BuildingController( PlayerController owner, MapController mapController, CameraController cameraController ){
+        this.owner = owner;
         buildings = new Array< Building >(  );
 
         shapeRenderer = new ShapeRenderer(  );
@@ -141,5 +144,9 @@ public class BuildingController {
         shapeRenderer.rect(box.x, box.y, box.width, box.height );
 
         shapeRenderer.end();
+    }
+
+    public PlayerController getOwner() {
+        return owner;
     }
 }

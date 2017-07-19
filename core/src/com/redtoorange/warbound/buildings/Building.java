@@ -1,13 +1,15 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.buildings;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.redtoorange.warbound.GameObject;
+import com.redtoorange.warbound.Resource;
 import com.redtoorange.warbound.controllers.BuildingController;
+import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -17,18 +19,24 @@ import com.redtoorange.warbound.map.MapTile;
  * @author Andrew McGuiness
  * @version 7/18/2017
  */
-public class Building implements GameObject{
+public class Building implements GameObject {
     public static String TAG = Building.class.getSimpleName();
 
-    private String name;
+    public enum State{
+        PLACING, PRODUCING
+    }
+
     private BuildingController controller;
+    private PlayerController owner;
+
+    private String name;
     private MapTile[][] currentTiles;
     private Sprite sprite;
     private int width;
     private int height;
-
-    private boolean placing;
     private boolean validLocations;
+
+    private State state = State.PLACING;
 
     public Building( String name, TextureRegion texture, int width, int height, BuildingController controller){
         this.name = name;
@@ -41,13 +49,13 @@ public class Building implements GameObject{
         this.height = height;
 
         this.controller = controller;
-        placing = true;
+        owner = controller.getOwner();
     }
 
     @Override
     public void update( float deltaTime ) {
-        if( !placing ){
-            Gdx.app.log( TAG, name + "Building ticking!" );
+        if( state == State.PRODUCING ){
+            owner.changeResource( Resource.GOLD, 1 );
         }
     }
 
@@ -124,7 +132,7 @@ public class Building implements GameObject{
         if( success ){
             unpaintTiles();
             sprite.setAlpha( 1.0f );
-            placing = false;
+            state = State.PRODUCING;
 
             for ( int x = 0; x < width; x++ ) {
                 for ( int y = 0; y < height; y++ ) {
@@ -152,5 +160,7 @@ public class Building implements GameObject{
     public Rectangle getBoundingBox(){
         return sprite.getBoundingRectangle();
     }
+
+
 
 }

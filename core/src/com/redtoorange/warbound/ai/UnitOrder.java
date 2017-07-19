@@ -1,4 +1,6 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.ai;
+
+import com.redtoorange.warbound.units.Unit;
 
 /**
  * UnitOrder.java - Description

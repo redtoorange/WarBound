@@ -1,4 +1,4 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.units;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -6,6 +6,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.redtoorange.warbound.GameObject;
+import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -15,11 +18,14 @@ import com.redtoorange.warbound.map.MapTile;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public class Unit implements GameObject{
+public class Unit implements GameObject {
+    public static String TAG = Unit.class.getSimpleName();
+
+    private UnitController controller;
+    private PlayerController owner;
+
     private float speed = 5;
     private UnitOrder currentOrder;
-    private UnitController unitController;
-
     private MapTile currentTile = null;
     private Sprite sprite;
     private boolean selected = false;
@@ -30,7 +36,8 @@ public class Unit implements GameObject{
         sprite.setPosition( startTile.getWorldPosition().x, startTile.getWorldPosition().y );
 
         setCurrentTile( startTile );
-        this.unitController = controller;
+        this.controller = controller;
+        owner = controller.getOwner();
     }
 
     public void update( float deltaTime){
