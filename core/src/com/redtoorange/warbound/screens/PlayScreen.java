@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.*;
 import com.redtoorange.warbound.controllers.*;
 import com.redtoorange.warbound.map.MapController;
@@ -31,7 +30,16 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
 
     private ControlState controlState = ControlState.IDLE;
 
-    private Unit p;
+    private Vector2 startTouch;
+    private Vector2 endTouch;
+
+    private int mapWidth = 50;
+    private int mapHeight = 50;
+
+    private float LINE_WIDTH = 0.1f;
+    private Color selectionBoxColor = new Color( 0, 1, 0, 0.75f);
+    private Color gridLineColor = new Color( 0, 0, 0, 0.5f);
+
 
     public PlayScreen() {
         super();
@@ -41,7 +49,7 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
         batch = new SpriteBatch(  );
         shapeRenderer = new ShapeRenderer(  );
 
-        mapController = new MapController( 0, 0, 50, 50 );
+        mapController = new MapController( 0, 0, mapWidth, mapHeight );
 
         clickController = new MouseClickController();
         Gdx.input.setInputProcessor( clickController );
@@ -101,38 +109,26 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
     private void draw( ){
         cameraController.update();
 
-        drawDebugGrid();
-
         batch.setProjectionMatrix( cameraController.combineMatrix() );
         batch.begin();
 
         mapController.draw( batch );
         unitController.draw( batch );
-
         buildingController.draw( batch );
 
         batch.end();
 
-        if( selecting )
+//        drawDebugGrid();
+
+        if( controlState == ControlState.SELECTING )
             renderSelectionBox();
+        if( controlState == ControlState.UNITS_SELECTED )
+            unitController.renderSelected( cameraController, selectionBoxColor);
+        if( controlState == ControlState.BUILDING_SELECTED )
+            buildingController.renderSelected( cameraController, selectionBoxColor);
     }
 
-    /**
-     * Draw black debug lines along the world grid squares.
-     */
-    private void drawDebugGrid() {
-        shapeRenderer.setProjectionMatrix( cameraController.combineMatrix() );
-        shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
-        shapeRenderer.setColor( Color.BLACK );
 
-        for( int x = 0; x < Constants.WIDTH_UNITS; x++){
-            for(int y = 0; y < Constants.HEIGHT_UNITS; y++){
-                shapeRenderer.rect( x, y, 1, 1 );
-            }
-        }
-
-        shapeRenderer.end();
-    }
 
     /**
      *
@@ -153,24 +149,36 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
         super.show();
     }
 
-    Vector2 startTouch;
-    Vector2 endTouch;
-    boolean selecting = false;
-    Array<Unit> units;
-
-    private void deselectUnits(){
-        if( units != null){
-            for(Unit u : units){
-                u.select( false );
-            }
-            units = null;
-        }
-    }
 
     @Override
     public boolean touchDown( int screenX, int screenY, int pointer, int button ) {
         if( button == Input.Buttons.LEFT ){
             switch( controlState ){
+                case IDLE:
+                    startTouch = cameraController.getMouseWorldPosition();
+                    endTouch = cameraController.getMouseWorldPosition();
+                    controlState = ControlState.SELECTING;
+                    break;
+
+                case SELECTING:
+                    break;
+
+                case UNITS_SELECTED:
+                    unitController.deselectUnits();
+
+                    startTouch = cameraController.getMouseWorldPosition();
+                    endTouch = cameraController.getMouseWorldPosition();
+                    controlState = ControlState.SELECTING;
+                    break;
+
+                case BUILDING_SELECTED:
+                    buildingController.deselectBuilding();
+
+                    startTouch = cameraController.getMouseWorldPosition();
+                    endTouch = cameraController.getMouseWorldPosition();
+                    controlState = ControlState.SELECTING;
+                    break;
+
                 case PLACING_BUILDING:
                     if( buildingController.placeBuilding() )
                         controlState = ControlState.IDLE;
@@ -183,6 +191,27 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
 
         if( button == Input.Buttons.RIGHT ){
             switch( controlState ){
+                case IDLE:
+                    break;
+
+                case SELECTING:
+                    controlState = ControlState.IDLE;
+                    break;
+
+                case UNITS_SELECTED:
+                    MapTile goal = mapController.getTileByWorldPos( cameraController.getMouseWorldPosition() );
+                    if( goal != null)
+                        unitController.giveMoveOrder( goal );
+
+                    unitController.deselectUnits();
+                    controlState = ControlState.IDLE;
+                    break;
+
+                case BUILDING_SELECTED:
+                    buildingController.deselectBuilding();
+                    controlState = ControlState.IDLE;
+                    break;
+
                 case PLACING_BUILDING:
                     buildingController.cancelPlacing();
                     controlState = ControlState.IDLE;
@@ -193,58 +222,65 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
             }
         }
 
-
-        if( button == Input.Buttons.LEFT && (units == null || units.size == 0 )){
-            deselectUnits();
-
-            selecting = true;
-            startTouch = cameraController.getMouseWorldPosition();
-            endTouch = cameraController.getMouseWorldPosition();
-        }
-        else if( button == Input.Buttons.LEFT && units != null && units.size > 0 ){
-            MapTile goal = mapController.getTileByWorldPos( cameraController.getMouseWorldPosition() );
-            if( goal != null)
-                for ( Unit u : units )
-                    u.giveOrder( new MoveOrder( goal ) );
-
-            deselectUnits();
-        }
-
         return false;
     }
 
     @Override
     public boolean touchUp( int screenX, int screenY, int pointer, int button ) {
-        if( selecting ) {
+        if( button == Input.Buttons.LEFT ){
+            switch( controlState ){
+                case IDLE:
+                    break;
 
-            endTouch = cameraController.getMouseWorldPosition();
+                case SELECTING:
+                    endTouch = cameraController.getMouseWorldPosition();
 
-            units = unitController.selectUnits( startTouch, endTouch );
-            for ( Unit u : units ) {
-                u.select( true );
+                    if( unitController.selectUnits( startTouch, endTouch ) )
+                        controlState = ControlState.UNITS_SELECTED;
+                    else if( buildingController.selectBuilding( startTouch, endTouch ) )
+                        controlState = ControlState.BUILDING_SELECTED;
+                    else
+                        controlState = ControlState.IDLE;
+
+                    break;
+
+                case UNITS_SELECTED:
+                    break;
+
+                case BUILDING_SELECTED:
+                    break;
+
+                case PLACING_BUILDING:
+                    break;
+
+                default:
+                    break;
             }
-
-            selecting = false;
         }
+
         return false;
     }
 
     @Override
     public boolean touchDragged( int screenX, int screenY, int pointer ) {
-        if( selecting ) {
+        if( controlState == ControlState.SELECTING ) {
             endTouch = cameraController.getMouseWorldPosition();
         }
 
         return false;
     }
 
-    private float LINE_WIDTH = 0.1f;
 
+
+    /**
+     *
+     */
     private void renderSelectionBox() {
         shapeRenderer.setProjectionMatrix(cameraController.combineMatrix());
         shapeRenderer.begin( ShapeRenderer.ShapeType.Filled );
-        shapeRenderer.setColor(Color.CHARTREUSE );
+        shapeRenderer.setColor( selectionBoxColor );
 
+        //Render the four corners
         shapeRenderer.rectLine(
                 startTouch.x, startTouch.y,
                 endTouch.x, startTouch.y , LINE_WIDTH );
@@ -259,6 +295,7 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
                 endTouch.x, endTouch.y, LINE_WIDTH );
 
 
+        //Render the lines between the corners
         float avg = LINE_WIDTH/2f;
         shapeRenderer.rect(
                 startTouch.x - avg, startTouch.y - avg,
@@ -272,6 +309,23 @@ public class PlayScreen extends ScreenAdapter implements ClickListener{
         shapeRenderer.rect(
                 startTouch.x - avg, endTouch.y - avg,
                 LINE_WIDTH, LINE_WIDTH );
+
+        shapeRenderer.end();
+    }
+
+    /**
+     * Draw black debug lines along the world grid squares.
+     */
+    private void drawDebugGrid() {
+        shapeRenderer.setProjectionMatrix( cameraController.combineMatrix() );
+        shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
+        shapeRenderer.setColor( gridLineColor );
+
+        for( int x = 0; x < mapWidth; x++){
+            for(int y = 0; y < mapHeight; y++){
+                shapeRenderer.rect( x, y, 1, 1 );
+            }
+        }
 
         shapeRenderer.end();
     }

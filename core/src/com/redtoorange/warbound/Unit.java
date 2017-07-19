@@ -36,6 +36,7 @@ public class Unit implements GameObject{
     public void update( float deltaTime){
         if( currentOrder != null ) {
             currentOrder.executed( deltaTime );
+
             if( currentOrder.isCompleted())
                 currentOrder = null;
         }

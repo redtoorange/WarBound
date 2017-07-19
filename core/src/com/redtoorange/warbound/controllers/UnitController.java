@@ -1,10 +1,15 @@
 package com.redtoorange.warbound.controllers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.redtoorange.warbound.MoveOrder;
 import com.redtoorange.warbound.Unit;
+import com.redtoorange.warbound.map.MapTile;
 
 /**
  * UnitController.java - Handle AI for all units.
@@ -13,10 +18,17 @@ import com.redtoorange.warbound.Unit;
  * @version 6/22/2017
  */
 public class UnitController {
+    public static String TAG = UnitController.class.getSimpleName();
+
     private Array<Unit> units;
+    private Array<Unit> selectedUnits;
+    private ShapeRenderer shapeRenderer;
 
     public UnitController(){
         units = new Array< Unit >(  );
+        selectedUnits = new Array< Unit >(  );
+
+        shapeRenderer = new ShapeRenderer(  );
     }
 
 
@@ -39,26 +51,67 @@ public class UnitController {
             u.draw( batch );
     }
 
-    public Array<Unit> selectUnits( Vector2 start, Vector2 end){
+    /**
+     *
+     * @param start
+     * @param end
+     * @return
+     */
+    public boolean selectUnits( Vector2 start, Vector2 end){
         float x = Math.min( start.x, end.x );
         float y = Math.min( start.y, end.y );
+
         float width = Math.max( start.x, end.x ) - x;
         float height = Math.max( start.y, end.y ) - y;
 
         Rectangle selectionRect = new Rectangle( x, y, width, height);
 
-        System.out.println( "Pos: " + selectionRect.getX() + ", " + selectionRect.getY());
-        System.out.println( "Size: " + selectionRect.getWidth() + ", " + selectionRect.getHeight() + "\n");
-
-
-
-        Array<Unit> selectedUnits = new Array< Unit >(  );
-
         for( Unit u : units){
-            if( selectionRect.contains( u.getBoundingBox() ) )
+            if( selectionRect.overlaps( u.getBoundingBox() ) )
                 selectedUnits.add( u );
         }
 
-        return selectedUnits;
+        return (selectedUnits.size > 0);
+    }
+
+
+    /**
+     *
+     */
+    public void deselectUnits(){
+        for(Unit u : selectedUnits)
+            u.select( false );
+
+        selectedUnits.clear();
+    }
+
+    /**
+     *
+     * @param goal
+     */
+    public void giveMoveOrder( MapTile goal){
+        for ( Unit u : selectedUnits )
+            u.giveOrder( new MoveOrder( goal ) );
+    }
+
+    /**
+     *
+     * @param cameraController
+     * @param selectionBoxColor
+     */
+    public void renderSelected( CameraController cameraController, Color selectionBoxColor) {
+        Gdx.gl.glLineWidth( 2f );
+        shapeRenderer.setProjectionMatrix( cameraController.combineMatrix() );
+        shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
+        shapeRenderer.setColor( selectionBoxColor );
+
+
+        for( Unit u : selectedUnits){
+            Rectangle box = u.getBoundingBox();
+
+            shapeRenderer.rect(box.x, box.y, box.width, box.height );
+        }
+
+        shapeRenderer.end();
     }
 }

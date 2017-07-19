@@ -7,5 +7,5 @@ package com.redtoorange.warbound;
  * @version 7/18/2017
  */
 public enum ControlState {
-    IDLE, UNIT_SELECTED, BUILDING_SELECTED, PLACING_BUILDING
+    IDLE, SELECTING, UNITS_SELECTED, BUILDING_SELECTED, PLACING_BUILDING
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.map.MapController;
@@ -147,4 +148,9 @@ public class Building implements GameObject{
 
         return valid;
     }
+
+    public Rectangle getBoundingBox(){
+        return sprite.getBoundingRectangle();
+    }
+
 }
