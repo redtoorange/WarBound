@@ -15,6 +15,7 @@ public class MoveOrder extends UnitOrder {
     enum MoveState{
         COMPLETED, MOVING, ARRIVED, CANCELLED, BLOCKED, NEW, RECIEVED
     }
+
     private MoveState state = MoveState.NEW;
 
     private MapTile targetTile;
@@ -32,18 +33,6 @@ public class MoveOrder extends UnitOrder {
 
     @Override
     public void executed( float deltaTime ) {
-//        if( unit != null && !completed){
-//            if( arrivedAtNext() ) {
-//                unit.move( nextTile.getWorldPosition() );
-//                unit.setCurrentTile( nextTile );
-//                calculateNextTile();
-//            }
-//
-//            if( nextTile != null && !completed ){
-//                moveTowardNext( deltaTime );
-//            }
-//        }
-
         switch( state ){
             case NEW:
                 return;
@@ -71,16 +60,59 @@ public class MoveOrder extends UnitOrder {
     }
 
 
+    private void updateFacing(){
+        Vector2 cur = unit.getCurrentTile().getWorldPosition();
+        Vector2 nex = nextTile.getWorldPosition();
+
+        cur.sub( nex ).nor();
+
+        if( cur.x < 0 ){
+            //moving right
+            if( cur.y < 0 ){
+                //moving up
+                unitFacing = Facing.NORTH_EAST;
+            }
+            else if( cur.y > 0){
+                //moving down
+                unitFacing = Facing.SOUTH_EAST;
+            }
+            else{
+                //flat line
+                unitFacing = Facing.EAST;
+            }
+        }
+        else if( cur.x > 0){
+            //moving left
+            if( cur.y < 0 ){
+                //moving up
+                unitFacing = Facing.NORTH_WEST;
+            }
+            else if( cur.y > 0){
+                //moving down
+                unitFacing = Facing.SOUTH_WEST;
+            }
+            else{
+                //flat line
+                unitFacing = Facing.WEST;
+            }
+        }
+        else{
+            if( cur.y < 0 ){
+                //moving up
+                unitFacing = Facing.NORTH;
+            }
+            else if( cur.y > 0){
+                //moving down
+                unitFacing = Facing.SOUTH;
+            }
+        }
+    }
+
+
     @Override
     public void cancelled() {
-        if( nextTile != null) {
-            nextTile.select( false );
+        if( nextTile != null)
             nextTile.setOccupier( null );
-        }
-
-        if( path != null && path.size > 0)
-            for(MapTile t : path)
-                t.select( false );
 
         if( unit != null )
             unit.move( unit.getCurrentTile().getWorldPosition() );
@@ -102,10 +134,11 @@ public class MoveOrder extends UnitOrder {
                 calculateNewPath();
             else {
                 nextTile.setOccupier( unit );
-                deltaVelocity.set( nextTile.getWorldPosition().sub( unit.getPosition() ) );
+                deltaVelocity.set( nextTile.getWorldPosition().sub( unit.getPosition() ) ).nor();
             }
 
             state = MoveState.MOVING;
+            updateFacing();
         }
         else{
             completed();
@@ -118,22 +151,14 @@ public class MoveOrder extends UnitOrder {
 
         path = new AStarSearch( targetTile.getController(), unit.getCurrentTile(), targetTile ).path;
 
-        for(MapTile t : path){
-            t.select( true );
-        }
-
         calculateNextTile();
     }
 
 
     private boolean arrivedAtNext(){
         float dist = Math.abs( nextTile.getWorldPosition().dst( unit.getPosition() ) );
-        boolean atNext = dist < 0.05f;
 
-        if( atNext )
-            nextTile.select( false );
-
-        return atNext;
+        return (dist < 0.05f);
     }
 
     @Override

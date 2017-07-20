@@ -76,15 +76,6 @@ public class MapTile {
         return "Tile at (" + worldX + ", " + worldY + ").";
     }
 
-    public void select( boolean selected ){
-        if( selected == true ){
-            sprite.setColor( Color.BLUE );
-        }
-        else{
-            sprite.setColor( Color.WHITE );
-        }
-    }
-
     public int getMapX() {
         return mapX;
     }

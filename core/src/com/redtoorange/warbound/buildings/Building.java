@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
-import com.redtoorange.warbound.Resource;
 import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
@@ -26,17 +25,17 @@ public class Building implements GameObject {
         PLACING, PRODUCING
     }
 
-    private BuildingController controller;
-    private PlayerController owner;
+    protected BuildingController controller;
+    protected PlayerController owner;
 
-    private String name;
-    private MapTile[][] currentTiles;
-    private Sprite sprite;
-    private int width;
-    private int height;
-    private boolean validLocations;
+    protected String name;
+    protected MapTile[][] currentTiles;
+    protected Sprite sprite;
+    protected int width;
+    protected int height;
+    protected boolean validLocations;
 
-    private State state = State.PLACING;
+    protected State state = State.PLACING;
 
     public Building( String name, TextureRegion texture, int width, int height, BuildingController controller){
         this.name = name;
@@ -54,9 +53,6 @@ public class Building implements GameObject {
 
     @Override
     public void update( float deltaTime ) {
-        if( state == State.PRODUCING ){
-            owner.changeResource( Resource.GOLD, 1 );
-        }
     }
 
     @Override
@@ -98,7 +94,7 @@ public class Building implements GameObject {
     }
 
     //Set all tiles to default color
-    private void unpaintTiles(){
+    protected void unpaintTiles(){
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
                 if( currentTiles[x][y] != null ) {
@@ -109,7 +105,7 @@ public class Building implements GameObject {
     }
 
     //Set the tiles to green if valid or red if blocked
-    private void paintTiles(){
+    protected void paintTiles(){
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
                 if( currentTiles[x][y] != null ) {
@@ -144,7 +140,7 @@ public class Building implements GameObject {
         return success;
     }
 
-    private boolean validatePlacement(){
+    protected boolean validatePlacement(){
         boolean valid = true;
 
         for ( int x = 0; x < width; x++ ) {

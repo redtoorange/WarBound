@@ -7,5 +7,5 @@ package com.redtoorange.warbound;
  * @version 7/19/2017
  */
 public enum Resource {
-    GOLD, WOOD, OIL, FOOD
+    GOLD, WOOD, OIL, FOOD_USED, FOOD_STORED
 }

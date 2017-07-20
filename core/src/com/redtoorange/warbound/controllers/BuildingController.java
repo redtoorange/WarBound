@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.redtoorange.warbound.ControlState;
 import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
@@ -38,6 +39,7 @@ public class BuildingController {
     }
 
     public void beginPlacing( Building b){
+        owner.setControlState( ControlState.PLACING_BUILDING );
         currentBuilding = b;
         placingBuilding = true;
     }
@@ -135,7 +137,7 @@ public class BuildingController {
      * @param selectionBoxColor
      */
     public void renderSelected( CameraController cameraController, Color selectionBoxColor) {
-        Gdx.gl.glLineWidth( 2f );
+        Gdx.gl.glLineWidth( 3f );
         shapeRenderer.setProjectionMatrix( cameraController.combineMatrix() );
         shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
         shapeRenderer.setColor( selectionBoxColor );

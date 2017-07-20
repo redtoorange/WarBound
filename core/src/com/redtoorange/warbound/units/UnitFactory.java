@@ -1,6 +1,8 @@
 package com.redtoorange.warbound.units;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -14,6 +16,6 @@ public class UnitFactory {
     private static TextureAtlas UNITS = new TextureAtlas( "units/player.pack" );
 
     public static Unit BuildFootman( UnitController controller, MapTile startTile ){
-        return new Unit(startTile, UNITS.findRegion( "idle" ), controller);
+        return new Peon(startTile, new TextureRegion( new Texture( "units/worker_m.png" ) ), controller);
     }
 }

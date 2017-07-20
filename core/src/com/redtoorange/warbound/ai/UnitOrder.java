@@ -9,6 +9,8 @@ import com.redtoorange.warbound.units.Unit;
  * @version 6/22/2017
  */
 public abstract class UnitOrder {
+    public Facing unitFacing = Facing.SOUTH;
+
     protected boolean completed;
 
     public abstract void executed( float deltaTime );

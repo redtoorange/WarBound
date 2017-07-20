@@ -1,20 +1,25 @@
 package com.redtoorange.warbound.controllers;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.redtoorange.warbound.Resource;
+import com.redtoorange.warbound.buildings.BuildingFactory;
 
 /**
  * UIController.java - Description
@@ -23,6 +28,9 @@ import com.redtoorange.warbound.Resource;
  * @version 7/19/2017
  */
 public class UIController {
+    private PlayerController owner;
+    private ResourceController resourceController;
+
     private OrthographicCamera guiCamera;
     private Viewport viewport;
     private Stage guiStage;
@@ -35,10 +43,8 @@ public class UIController {
     private Label usedFoodLabel;
     private Label availableFoodLabel;
 
-    private PlayerController playerController;
-
-    public UIController( PlayerController playerController ) {
-        this.playerController = playerController;
+    public UIController( PlayerController owner, InputMultiplexer multiplexer ) {
+        this.owner = owner;
 
         guiCamera = new OrthographicCamera( Gdx.graphics.getWidth(), Gdx.graphics.getHeight() );
         viewport = new ScreenViewport( guiCamera );
@@ -56,14 +62,52 @@ public class UIController {
         rootTable.setDebug( true );
 
         rootTable.top();
-        Table resources = new Table( guiSkin );
-        rootTable.add( resources );
+
 
         Pixmap pix = new Pixmap( 1, 1, Pixmap.Format.RGB888 );
         pix.setColor( Color.BLACK );
         pix.fill();
 
         TextureRegionDrawable tex = new TextureRegionDrawable( new TextureRegion( new Texture( pix ) ) );
+
+        initBuildPanel( tex );
+        initResourcePanel( tex );
+
+        multiplexer.addProcessor( guiStage );
+    }
+
+    private void initBuildPanel( TextureRegionDrawable tex ) {
+        Table buildings = new Table( guiSkin );
+
+        rootTable.add( buildings ).expandY().left().width( Gdx.graphics.getWidth() * 0.15f ).height( Gdx.graphics.getHeight()  );
+        buildings.setBackground( tex );
+
+        Button farmButton = new Button( guiSkin );
+        farmButton.add( "Farm" );
+        farmButton.addListener( new ChangeListener() {
+            @Override
+            public void changed( ChangeEvent event, Actor actor ) {
+                owner.getBuildingController().beginPlacing( BuildingFactory.BuildFarm( owner.getBuildingController() ) );
+            }
+        } );
+        buildings.add( farmButton );
+
+        Button barracksButton = new Button( guiSkin );
+        barracksButton.add( "Barracks" );
+        barracksButton.addListener( new ChangeListener() {
+            @Override
+            public void changed( ChangeEvent event, Actor actor ) {
+                owner.getBuildingController().beginPlacing( BuildingFactory.BuildBarracks( owner.getBuildingController() ) );
+            }
+        } );
+        buildings.add( barracksButton );
+    }
+
+
+
+    private void initResourcePanel( TextureRegionDrawable tex ) {
+        Table resources = new Table( guiSkin );
+        rootTable.add( resources ).center().top().expandX().width( Gdx.graphics.getWidth() * 0.85f );
         resources.setBackground( tex );
         float cellWidth = 100.0f;
         float spacingWidth = 50.0f;
@@ -86,7 +130,6 @@ public class UIController {
         resources.add( "Oil: " );
         oilLabel = new Label( "0", guiSkin );
         resources.add( oilLabel ).width( cellWidth ).center();
-
 
 
         //FOOD
@@ -114,11 +157,22 @@ public class UIController {
     }
 
     private void updateResources(){
-        goldLabel.setText( "" + playerController.getResource( Resource.GOLD ) );
-        woodLabel.setText( "" + playerController.getResource( Resource.WOOD ) );
-        oilLabel.setText( "" + playerController.getResource( Resource.OIL ) );
+        if( resourceController == null )
+            resourceController = owner.getResourceController();
 
-        usedFoodLabel.setText( "" + playerController.getUsedFood() );
-        availableFoodLabel.setText( "" + playerController.getAvailableFood() );
+        goldLabel.setText( "" + resourceController.getResource( Resource.GOLD ) );
+        woodLabel.setText( "" + resourceController.getResource( Resource.WOOD ) );
+        oilLabel.setText( "" + resourceController.getResource( Resource.OIL ) );
+
+        usedFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_USED) );
+        availableFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_STORED) );
+    }
+
+    public PlayerController getOwner() {
+        return owner;
+    }
+
+    public void resize( int width, int height ) {
+        viewport.update( width, height );
     }
 }

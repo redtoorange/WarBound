@@ -1,12 +1,13 @@
 package com.redtoorange.warbound.units;
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
+import com.redtoorange.warbound.ai.Facing;
 import com.redtoorange.warbound.ai.UnitOrder;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.controllers.UnitController;
@@ -18,17 +19,28 @@ import com.redtoorange.warbound.map.MapTile;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public class Unit implements GameObject {
+public abstract class Unit implements GameObject {
     public static String TAG = Unit.class.getSimpleName();
 
-    private UnitController controller;
-    private PlayerController owner;
+    private static final int NORTH = 0, EAST = 1, N_EAST = 2, SOUTH = 3, S_EAST = 4;
+    private Texture[] textures = {
+            new Texture( "units/peon_idle_n.png" ),
+            new Texture( "units/peon_idle_e.png" ),
+            new Texture( "units/peon_idle_ne.png" ),
+            new Texture( "units/peon_idle_s.png" ),
+            new Texture( "units/peon_idle_se.png" )
+    };
 
-    private float speed = 5;
-    private UnitOrder currentOrder;
-    private MapTile currentTile = null;
-    private Sprite sprite;
-    private boolean selected = false;
+    protected Facing currentFacing = Facing.SOUTH;
+
+    protected UnitController controller;
+    protected PlayerController owner;
+
+    protected float speed = 5;
+    protected UnitOrder currentOrder;
+    protected MapTile currentTile = null;
+    protected Sprite sprite;
+    protected boolean selected = false;
 
     public Unit( MapTile startTile, TextureRegion texture, UnitController controller){
         sprite = new Sprite( texture );
@@ -46,10 +58,58 @@ public class Unit implements GameObject {
 
             if( currentOrder.isCompleted())
                 currentOrder = null;
+            else{
+                currentFacing = currentOrder.unitFacing;
+                updateSpriteFacing();
+            }
         }
 
         if( selected ){
             //Do some cool shit?
+        }
+    }
+
+    //TODO: This is a total Hack, fix this shit!
+    protected void updateSpriteFacing(){
+        sprite.setFlip( false, false );
+        switch ( currentFacing ){
+            case NORTH:
+                sprite.setTexture( textures[NORTH] );
+                break;
+
+            case SOUTH:
+                sprite.setTexture( textures[SOUTH] );
+                break;
+
+            //Flip Pair
+            case EAST:
+                sprite.setTexture( textures[EAST] );
+                break;
+
+            case WEST:
+                sprite.setFlip( true, false );
+                sprite.setTexture( textures[EAST] );
+                break;
+
+            //Flip Pair
+            case NORTH_EAST:
+                sprite.setTexture( textures[N_EAST] );
+                break;
+
+            case NORTH_WEST:
+                sprite.setFlip( true, false );
+                sprite.setTexture( textures[N_EAST] );
+                break;
+
+            //Flip Pair
+            case SOUTH_EAST:
+                sprite.setTexture( textures[S_EAST] );
+                break;
+
+            case SOUTH_WEST:
+                sprite.setFlip( true, false );
+                sprite.setTexture( textures[S_EAST] );
+                break;
         }
     }
 
@@ -59,20 +119,10 @@ public class Unit implements GameObject {
 
     public void select( boolean selected ){
         this.selected = selected;
-
-        if( selected )
-            sprite.setColor( Color.GREEN );
-        else
-            sprite.setColor( Color.WHITE );
     }
 
     public Rectangle getBoundingBox(){
         return sprite.getBoundingRectangle();
-    }
-
-    @Override
-    public String toString() {
-        return "Unit at (" + sprite.getX() + ", " + sprite.getY() + ")\n";
     }
 
     public void cancelCurrentOrder(){
@@ -117,5 +167,4 @@ public class Unit implements GameObject {
         currentTile.setOccupier( this );
 
     }
-
 }
