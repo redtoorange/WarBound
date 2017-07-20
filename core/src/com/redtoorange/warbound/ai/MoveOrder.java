@@ -11,23 +11,23 @@ import com.redtoorange.warbound.units.Unit;
  * @author Andrew McGuiness
  * @version 6/22/2017
  */
+//TODO: Have the unit finish the move to the next tile, then cancel the order.
 public class MoveOrder extends UnitOrder {
     enum MoveState{
         COMPLETED, MOVING, ARRIVED, CANCELLED, BLOCKED, NEW, RECIEVED
     }
 
     private MoveState state = MoveState.NEW;
-
-    private MapTile targetTile;
+    private MapTile destination;
     private MapTile nextTile;
-
-    private com.redtoorange.warbound.units.Unit unit;
+    private Unit unit;
     private Vector2 deltaVelocity = new Vector2( 0, 0 );
 
     private Array<MapTile> path;
 
-    public MoveOrder( MapTile targetTile ){
-        this.targetTile = targetTile;
+
+    public MoveOrder( MapTile destination ){
+        this.destination = destination;
         completed = false;
     }
 
@@ -40,6 +40,9 @@ public class MoveOrder extends UnitOrder {
                 calculateNewPath();
                 break;
             case MOVING:
+                moveTowardNext( deltaTime );
+                break;
+            case CANCELLED:
                 moveTowardNext( deltaTime );
                 break;
             case ARRIVED:
@@ -55,8 +58,15 @@ public class MoveOrder extends UnitOrder {
         amount.scl( deltaTime * unit.getSpeed() );
         unit.translate( amount );
 
-        if( arrivedAtNext() )
-            state = MoveState.ARRIVED;
+        if( hasArrivedAtNext() ) {
+            if ( state == MoveState.MOVING )
+                state = MoveState.ARRIVED;
+            else if( state == MoveState.CANCELLED) {
+                unit.move( nextTile.getWorldPosition() );
+                unit.setCurrentTile( nextTile );
+                completed();
+            }
+        }
     }
 
 
@@ -108,23 +118,17 @@ public class MoveOrder extends UnitOrder {
         }
     }
 
-
+    //TODO: Fix this, there is a jumping back when the order is cancelled.
     @Override
     public void cancelled() {
-        if( nextTile != null)
-            nextTile.setOccupier( null );
-
-        if( unit != null )
-            unit.move( unit.getCurrentTile().getWorldPosition() );
+        state = MoveState.CANCELLED;
     }
 
     @Override
-    public void recieved( Unit unit ) {
+    public void received( Unit unit ) {
         this.unit = unit;
         state = MoveState.RECIEVED;
     }
-
-
 
     private void calculateNextTile(){
         if( path != null && path.size >  0) {
@@ -146,17 +150,20 @@ public class MoveOrder extends UnitOrder {
     }
 
     private void calculateNewPath(){
-        if( targetTile.blocked() )
-            targetTile = targetTile.getEmptyNeighbor();
+        if( destination.blocked() )
+            destination = destination.getEmptyNeighbor();
 
-        path = new AStarSearch( targetTile.getController(), unit.getCurrentTile(), targetTile ).path;
+        path = new AStarSearch( destination.getController(), unit.getCurrentTile(), destination ).path;
 
         calculateNextTile();
     }
 
 
-    private boolean arrivedAtNext(){
-        float dist = Math.abs( nextTile.getWorldPosition().dst( unit.getPosition() ) );
+    private boolean hasArrivedAtNext(){
+        float dist = 0.0f;
+
+        if( nextTile != null )
+            Math.abs( nextTile.getWorldPosition().dst( unit.getPosition() ) );
 
         return (dist < 0.05f);
     }

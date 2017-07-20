@@ -15,7 +15,7 @@ public abstract class UnitOrder {
 
     public abstract void executed( float deltaTime );
     public abstract void cancelled();
-    public abstract void recieved( Unit unit );
+    public abstract void received( Unit unit );
     public abstract void completed();
 
     public boolean isCompleted(){

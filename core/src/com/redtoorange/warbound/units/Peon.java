@@ -91,8 +91,10 @@ public class Peon extends Unit {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( currentOrder != null)
+        if( currentOrder != null) {
+            updateSpriteFacing();
             animationTime += deltaTime;
+        }
         else
             animationTime = 0.0f;
     }
