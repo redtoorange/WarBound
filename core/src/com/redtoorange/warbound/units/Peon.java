@@ -41,45 +41,46 @@ public class Peon extends Unit {
 
     protected void updateSpriteFacing() {
         flipped = false;
-        switch ( currentFacing ) {
-            case NORTH:
-                currentAnimation = animations[NORTH];
-                break;
+//        switch ( currentFacing ) {
+        switch ( movementController.unitFacing ) {
+                case NORTH:
+                    currentAnimation = animations[NORTH];
+                    break;
 
-            case SOUTH:
-                currentAnimation = animations[SOUTH];
-                break;
+                case SOUTH:
+                    currentAnimation = animations[SOUTH];
+                    break;
 
-            //Flip Pair
-            case EAST:
-                currentAnimation = animations[EAST];
-                break;
+                //Flip Pair
+                case EAST:
+                    currentAnimation = animations[EAST];
+                    break;
 
-            case WEST:
-                flipped = true;
-                currentAnimation = animations[EAST];
-                break;
+                case WEST:
+                    flipped = true;
+                    currentAnimation = animations[EAST];
+                    break;
 
-            //Flip Pair
-            case NORTH_EAST:
-                currentAnimation = animations[N_EAST];
-                break;
+                //Flip Pair
+                case NORTH_EAST:
+                    currentAnimation = animations[N_EAST];
+                    break;
 
-            case NORTH_WEST:
-                flipped = true;
-                currentAnimation = animations[N_EAST];
-                break;
+                case NORTH_WEST:
+                    flipped = true;
+                    currentAnimation = animations[N_EAST];
+                    break;
 
-            //Flip Pair
-            case SOUTH_EAST:
-                currentAnimation = animations[S_EAST];
-                break;
+                //Flip Pair
+                case SOUTH_EAST:
+                    currentAnimation = animations[S_EAST];
+                    break;
 
-            case SOUTH_WEST:
-                flipped = true;
-                currentAnimation = animations[S_EAST];
-                break;
-        }
+                case SOUTH_WEST:
+                    flipped = true;
+                    currentAnimation = animations[S_EAST];
+                    break;
+            }
     }
 
     public void draw( SpriteBatch batch ) {
@@ -91,7 +92,7 @@ public class Peon extends Unit {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( currentOrder != null) {
+        if( !movementController.isIdle() ) {
             updateSpriteFacing();
             animationTime += deltaTime;
         }

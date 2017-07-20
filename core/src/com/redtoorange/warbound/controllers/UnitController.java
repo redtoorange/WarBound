@@ -7,9 +7,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.ai.MoveOrder;
-import com.redtoorange.warbound.units.Unit;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.Unit;
 
 /**
  * UnitController.java - Handle AI for all units.
@@ -95,7 +94,7 @@ public class UnitController {
      */
     public void giveMoveOrder( MapTile goal){
         for ( Unit u : selectedUnits )
-            u.giveOrder( new MoveOrder( goal ) );
+            u.giveMoveOrder( goal );
     }
 
     /**

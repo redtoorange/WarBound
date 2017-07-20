@@ -7,48 +7,47 @@ import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Unit;
 
 /**
- * MoveOrder.java - Description
+ * MovementController.java - Description
  *
  * @author Andrew McGuiness
- * @version 6/22/2017
+ * @version 7/20/2017
  */
-//TODO: Have the unit finish the move to the next tile, then cancel the order.
-public class MoveOrder extends UnitOrder {
-    public static final String TAG = MoveOrder.class.getSimpleName();
+public class MovementController {
+    public static final String TAG = MovementController.class.getSimpleName();
+
+    public Facing unitFacing = Facing.SOUTH;
+
     private static final float ARRIVAL_THRESHOLD = 0.05f;
 
     enum MoveState{
-        COMPLETED, MOVING, ARRIVED, CANCELLING, BLOCKED, NEW, RECIEVED
+        IDLE, MOVING, ARRIVED, NEW_ORDER
     }
 
     private MoveState state;
 
-    private Unit unit;
+    private Unit owner;
     private Vector2 deltaVelocity = new Vector2( 0, 0 );
-
 
     private Array<MapTile> path;
     private MapTile destination;
     private MapTile candidate;
     private MapTile nextTile;
 
-
-    public MoveOrder( MapTile destination ){
-        this.destination = destination;
-        this.state = MoveState.NEW;
-
+    public MovementController( Unit owner ){
+        this.owner = owner;
+        this.state = MoveState.IDLE;
     }
 
-    @Override
-    public void executeOrder( float deltaTime ) {
+    public void execute( float deltaTime ){
         switch( state ){
-            case NEW:
+            case IDLE:
                 return;
-            case RECIEVED:
+
+            case NEW_ORDER:
                 calculateNextTile();
                 break;
 
-            case MOVING: case CANCELLING:
+            case MOVING:
                 moveTowardNext( deltaTime );
                 break;
 
@@ -58,25 +57,26 @@ public class MoveOrder extends UnitOrder {
         }
     }
 
+    public void setDestination( MapTile destination ){
+        this.destination = destination;
+        state = MoveState.NEW_ORDER;
+    }
+
     private void moveTowardNext( float deltaTime ){
         Vector2 amount = new Vector2( deltaVelocity );
-        amount.scl( deltaTime * unit.getSpeed() );
-        unit.translate( amount );
+        amount.scl( deltaTime * owner.getSpeed() );
+        owner.translate( amount );
 
         if( hasArrivedAtNext() ) {
 
             if( nextTile != null ) {
-                unit.move( nextTile.getWorldPosition() );
-                unit.setCurrentTile( nextTile );
+                owner.move( nextTile.getWorldPosition() );
+                owner.setCurrentTile( nextTile );
             }
 
             switch ( state ){
                 case MOVING:
                     state = MoveState.ARRIVED;
-                    break;
-
-                case CANCELLING:
-                    completeOrder();
                     break;
             }
         }
@@ -125,18 +125,6 @@ public class MoveOrder extends UnitOrder {
         }
     }
 
-    @Override
-    public void cancelOrder() {
-        if( state != MoveState.COMPLETED)
-            state = MoveState.CANCELLING;
-    }
-
-    @Override
-    public void receiveOrder( Unit unit ) {
-        this.unit = unit;
-        state = MoveState.RECIEVED;
-    }
-
     private void calculateNextTile(){
         //Create a new path
         calculateNewPath();
@@ -144,9 +132,9 @@ public class MoveOrder extends UnitOrder {
         //if the path's size is greater than 0
         if( path != null && path.size >  0) {
             nextTile = path.pop();
-            nextTile.setOccupier( unit );
+            nextTile.setOccupier( owner );
 
-            deltaVelocity.set( nextTile.getWorldPosition().sub( unit.getPosition() ) ).nor();
+            deltaVelocity.set( nextTile.getWorldPosition().sub( owner.getPosition() ) ).nor();
             state = MoveState.MOVING;
             updateFacing();
         }
@@ -161,8 +149,8 @@ public class MoveOrder extends UnitOrder {
      */
     private void calculateNewPath(){
         Gdx.app.log(TAG, "Calculating Path");
-        if( (candidate != null && unit.getCurrentTile() == candidate && destination.blocked()) ||
-                unit.getCurrentTile() == destination) {
+        if( (candidate != null && owner.getCurrentTile() == candidate && destination.blocked()) ||
+                owner.getCurrentTile() == destination) {
             path = null;
         }
 
@@ -172,10 +160,10 @@ public class MoveOrder extends UnitOrder {
             if ( candidate.blocked() && candidate.getOccupier() != this )
                 candidate = destination.getEmptyNeighbor();
 
-            if( unit.getCurrentTile() == candidate )
+            if( owner.getCurrentTile() == candidate )
                 path = null;
             else
-                path = new AStarSearch( destination.getController(), unit.getCurrentTile(), candidate ).path;
+                path = new AStarSearch( destination.getController(), owner.getCurrentTile(), candidate ).path;
         }
 
         //Log path data
@@ -194,13 +182,13 @@ public class MoveOrder extends UnitOrder {
         if( nextTile == null )
             return true;
 
-        float dist = Math.abs( nextTile.getWorldPosition().dst( unit.getPosition() ) );
+        float dist = Math.abs( nextTile.getWorldPosition().dst( owner.getPosition() ) );
         return (dist < ARRIVAL_THRESHOLD);
     }
 
-    @Override
+
     protected void completeOrder() {
-        state = MoveState.COMPLETED;
+        state = MoveState.IDLE;
 
         deltaVelocity.set( 0, 0 );
 
@@ -208,8 +196,7 @@ public class MoveOrder extends UnitOrder {
         nextTile = null;
     }
 
-    @Override
-    public boolean isCompleted() {
-        return state == MoveState.COMPLETED;
+    public boolean isIdle(){
+        return state == MoveState.IDLE;
     }
 }

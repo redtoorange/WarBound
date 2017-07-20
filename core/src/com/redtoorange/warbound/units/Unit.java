@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
 import com.redtoorange.warbound.ai.Facing;
-import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.ai.MovementController;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
@@ -28,8 +28,7 @@ public abstract class Unit implements GameObject {
 
     protected float speed = 5;
 
-    protected UnitOrder nextOrder;
-    protected UnitOrder currentOrder;
+    protected MovementController movementController;
 
     protected MapTile currentTile = null;
     protected Sprite sprite;
@@ -40,26 +39,15 @@ public abstract class Unit implements GameObject {
         sprite.setSize( 1, 1 );
         sprite.setPosition( startTile.getWorldPosition().x, startTile.getWorldPosition().y );
 
+        movementController = new MovementController( this );
+
         setCurrentTile( startTile );
         this.controller = controller;
         owner = controller.getOwner();
     }
 
     public void update( float deltaTime){
-        if( currentOrder != null ) {
-            currentOrder.executeOrder( deltaTime );
-
-            if( currentOrder.isCompleted() )
-                currentOrder = null;
-            else
-                currentFacing = currentOrder.unitFacing;
-        }
-
-        if( currentOrder == null && nextOrder != null ){
-            currentOrder = nextOrder;
-            nextOrder = null;
-            currentOrder.receiveOrder( this );
-        }
+        movementController.execute( deltaTime );
     }
 
     public void draw( SpriteBatch batch){
@@ -74,17 +62,17 @@ public abstract class Unit implements GameObject {
         return sprite.getBoundingRectangle();
     }
 
-    public void cancelCurrentOrder(){
-        if( currentOrder != null ){
-            currentOrder.cancelOrder();
-        }
+
+    /**
+     * Order the unit to move to the indicated tile or a close one.
+     * @param destination Tile to move to
+     */
+    public void giveMoveOrder( MapTile destination ){
+        movementController.setDestination( destination );
     }
 
-    public void giveOrder( UnitOrder order ){
-        if( currentOrder != null )
-            currentOrder.cancelOrder();
-
-        nextOrder = order;
+    public void giveAttackOrder( GameObject target ){
+        //STUB
     }
 
     public void move( Vector2 newPos ){
