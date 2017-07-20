@@ -90,7 +90,7 @@ public class MapController implements WeightedGraph<MapTile>{
                     neighbors.add( tiles[x][y+1] );
                 }
 
-                tiles[x][y].setNeightbors( neighbors );
+                tiles[x][y].setNeighbors( neighbors );
             }
         }
     }
@@ -200,7 +200,7 @@ public class MapController implements WeightedGraph<MapTile>{
 
     @Override
     public Iterable< MapTile > Neighbors( MapTile id ) {
-        return id.getNeightbors();
+        return id.getNeighbors();
     }
 
     public boolean validPosition( int x, int y){

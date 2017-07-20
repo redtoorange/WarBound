@@ -11,14 +11,10 @@ import com.redtoorange.warbound.units.Unit;
 public abstract class UnitOrder {
     public Facing unitFacing = Facing.SOUTH;
 
-    protected boolean completed;
+    public abstract void executeOrder( float deltaTime );
+    public abstract void cancelOrder();
+    public abstract void receiveOrder( Unit unit );
 
-    public abstract void executed( float deltaTime );
-    public abstract void cancelled();
-    public abstract void received( Unit unit );
-    public abstract void completed();
-
-    public boolean isCompleted(){
-        return completed;
-    }
+    protected abstract void completeOrder();
+    public abstract boolean isCompleted();
 }

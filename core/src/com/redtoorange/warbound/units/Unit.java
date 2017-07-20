@@ -47,18 +47,18 @@ public abstract class Unit implements GameObject {
 
     public void update( float deltaTime){
         if( currentOrder != null ) {
-            currentOrder.executed( deltaTime );
+            currentOrder.executeOrder( deltaTime );
 
-            if( currentOrder.isCompleted())
+            if( currentOrder.isCompleted() )
                 currentOrder = null;
-            else{
+            else
                 currentFacing = currentOrder.unitFacing;
-            }
         }
 
-        if( nextOrder != null && currentOrder == null ){
+        if( currentOrder == null && nextOrder != null ){
             currentOrder = nextOrder;
             nextOrder = null;
+            currentOrder.receiveOrder( this );
         }
     }
 
@@ -76,18 +76,15 @@ public abstract class Unit implements GameObject {
 
     public void cancelCurrentOrder(){
         if( currentOrder != null ){
-            currentOrder.cancelled();
+            currentOrder.cancelOrder();
         }
     }
 
     public void giveOrder( UnitOrder order ){
-        cancelCurrentOrder();
-
-        if( nextOrder != null )
-            nextOrder.cancelled();
+        if( currentOrder != null )
+            currentOrder.cancelOrder();
 
         nextOrder = order;
-        nextOrder.received( this );
     }
 
     public void move( Vector2 newPos ){

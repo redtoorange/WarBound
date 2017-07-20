@@ -14,21 +14,18 @@ import com.redtoorange.warbound.GameObject;
  * @version 6/21/2017
  */
 public class MapTile {
-    private Array<MapTile> neighbors;
-    private TileType type;
+    public static final String TAG = MapTile.class.getSimpleName();
 
-    private GameObject occupier = null;
-
-
-    private MapController controller;
-
-    private float worldX;
-    private float worldY;
-
-    private int mapX;
-    private int mapY;
+    private final MapController controller;
+    private final float worldX;
+    private final float worldY;
+    private final int mapX;
+    private final int mapY;
 
     private Sprite sprite;
+    private Array<MapTile> neighbors;
+    private TileType type;
+    private GameObject occupier;
 
 
     public MapTile( float worldX, float worldY, int mapX, int mapY, MapController controller, TileType type){
@@ -47,11 +44,11 @@ public class MapTile {
         sprite.setPosition( worldX, worldY );
     }
 
-    public void setNeightbors( Array<MapTile> neighbors ){
+    public void setNeighbors( Array<MapTile> neighbors ){
         this.neighbors = neighbors;
     }
 
-    public Array<MapTile> getNeightbors(){
+    public Array<MapTile> getNeighbors(){
         return neighbors;
     }
 
@@ -91,6 +88,9 @@ public class MapTile {
         return true;
     }
 
+    /**
+     * @return  True if the tile is occupied or is stone.
+     */
     public boolean blocked(){
         return isOccupied() || type == TileType.STONE;
     }
@@ -116,7 +116,7 @@ public class MapTile {
         MapTile empty = null;
 
         for( int i = 0; i < neighbors.size && empty == null; i++){
-            if( !neighbors.get( i ).isOccupied())
+            if( !neighbors.get( i ).blocked() )
                 empty = neighbors.get( i );
         }
 
@@ -135,5 +135,9 @@ public class MapTile {
      */
     public void setColor( Color color ){
         sprite.setColor( color );
+    }
+
+    public GameObject getOccupier() {
+        return occupier;
     }
 }
