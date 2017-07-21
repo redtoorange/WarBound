@@ -93,8 +93,12 @@ public class PlayerController implements ClickListener {
             unitController.renderSelected( cameraController, Constants.SELECTION_COLOR);
         if( controlState == ControlState.BUILDING_SELECTED )
             buildingController.renderSelected( cameraController, Constants.SELECTION_COLOR);
-
         uiController.draw();
+
+        if( Constants.DEBUGGING ){
+            unitController.debugDraw();
+        }
+
     }
 
 

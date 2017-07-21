@@ -3,6 +3,7 @@ package com.redtoorange.warbound.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
+import com.redtoorange.warbound.Constants;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 
@@ -42,6 +43,9 @@ public class PlayScreen extends ScreenAdapter {
     private void update( float deltaTime ){
         if( Gdx.input.isKeyJustPressed( Input.Keys.ESCAPE ) ) {
             Gdx.app.exit();
+        }
+        if( Gdx.input.isKeyJustPressed( Input.Keys.D ) ) {
+            Constants.DEBUGGING = !Constants.DEBUGGING;
         }
 
         mapController.update( deltaTime );

@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
 import com.redtoorange.warbound.ai.Facing;
 import com.redtoorange.warbound.ai.MovementController;
+import com.redtoorange.warbound.ai.UnitOrder;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
@@ -22,6 +23,7 @@ public abstract class Unit implements GameObject {
     public static String TAG = Unit.class.getSimpleName();
 
     protected Facing currentFacing = Facing.SOUTH;
+    protected UnitOrder currentOrder = UnitOrder.IDLE;
 
     protected UnitController controller;
     protected PlayerController owner;
@@ -47,7 +49,14 @@ public abstract class Unit implements GameObject {
     }
 
     public void update( float deltaTime){
-        movementController.execute( deltaTime );
+        switch ( currentOrder ){
+            case IDLE:
+                break;
+            case MOVE:
+                movementController.execute( deltaTime );
+                break;
+        }
+
     }
 
     public void draw( SpriteBatch batch){
@@ -68,6 +77,7 @@ public abstract class Unit implements GameObject {
      * @param destination Tile to move to
      */
     public void giveMoveOrder( MapTile destination ){
+        currentOrder = UnitOrder.MOVE;
         movementController.setDestination( destination );
     }
 
@@ -102,5 +112,17 @@ public abstract class Unit implements GameObject {
         currentTile = newTile;
         currentTile.setOccupier( this );
 
+    }
+
+    public MovementController getMovementController() {
+        return movementController;
+    }
+
+    public UnitOrder getCurrentOrder() {
+        return currentOrder;
+    }
+
+    public void setCurrentOrder( UnitOrder currentOrder ) {
+        this.currentOrder = currentOrder;
     }
 }

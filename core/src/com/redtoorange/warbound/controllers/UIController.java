@@ -43,6 +43,9 @@ public class UIController {
     private Label usedFoodLabel;
     private Label availableFoodLabel;
 
+    private Table debuggingTable;
+    public Label debuggingLabel;
+
     public UIController( PlayerController owner, InputMultiplexer multiplexer ) {
         this.owner = owner;
 
@@ -57,8 +60,6 @@ public class UIController {
         guiStage.addActor( rootTable );
 
         rootTable.setFillParent( true );
-
-
         rootTable.setDebug( true );
 
         rootTable.top();
@@ -74,6 +75,13 @@ public class UIController {
         initResourcePanel( tex );
 
         multiplexer.addProcessor( guiStage );
+
+        debuggingTable = new Table( guiSkin );
+        debuggingTable.setDebug( true );
+        debuggingTable.setFillParent( true );
+        debuggingLabel = new Label( "Debug Info", guiSkin );
+        debuggingTable.add( debuggingLabel );
+        guiStage.addActor( debuggingTable );
     }
 
     private void initBuildPanel( TextureRegionDrawable tex ) {
@@ -149,6 +157,7 @@ public class UIController {
     public void update( float deltaTime ){
         updateResources();
         guiStage.act(deltaTime);
+
     }
 
     public void draw( ){

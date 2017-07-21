@@ -7,7 +7,7 @@ package com.redtoorange.warbound.map;
  * @version 6/22/2017
  */
 public enum TileType {
-    DIRT("dirt", 1), SAND("sand", 2f), GRASS("grass", 1), STONE("stone", 9999);
+    DIRT("dirt", 1), SAND("sand", 1), GRASS("grass", 1), STONE("stone", 9999);
 
     public final String key;
     public final float cost;

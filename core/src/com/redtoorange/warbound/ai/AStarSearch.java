@@ -51,14 +51,21 @@ public class AStarSearch {
         //The path has been found, reverse it and save it inside of path
         MapTile temp = goal;
         path.add( goal );
+        boolean completePath = false;
+
         while( cameFrom.containsKey( start )){
             temp = cameFrom.get( temp );
 
-            if( temp.equals( start ))
+            if( temp.equals( start )) {
+                completePath = true;
                 break;
+            }
             else
                 path.add( temp );
         }
+
+        if( !completePath)
+            path = null;
     }
 
     /**

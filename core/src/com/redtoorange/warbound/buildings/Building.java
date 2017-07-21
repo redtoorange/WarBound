@@ -135,6 +135,8 @@ public class Building implements GameObject {
                     currentTiles[x][y].setOccupier( this );
                 }
             }
+
+            currentTiles[0][0].setColor( Color.BLUE );
         }
 
         return success;

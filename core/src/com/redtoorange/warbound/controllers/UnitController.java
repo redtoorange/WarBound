@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.redtoorange.warbound.Constants;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Unit;
 
@@ -113,6 +114,8 @@ public class UnitController {
             Rectangle box = u.getBoundingBox();
 
             shapeRenderer.rect(box.x, box.y, box.width, box.height );
+            if( Constants.DEBUGGING)
+                u.getMovementController().debuggingInfo();
         }
 
         shapeRenderer.end();
@@ -120,5 +123,23 @@ public class UnitController {
 
     public PlayerController getOwner() {
         return owner;
+    }
+
+    public void debugDraw(){
+        shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
+        shapeRenderer.setColor( Color.BLUE );
+        for( Unit u : units ){
+            if( !u.getMovementController().isIdle() ){
+                Array< MapTile > path = u.getMovementController().getPath();
+                if( path != null && path.size > 0){
+
+                    for( int i = 0; i < path.size-1; i++){
+                        shapeRenderer.line( path.get( i ).getWorldPositionCenter(), path.get( i+1 ).getWorldPositionCenter() );
+                    }
+                    shapeRenderer.line(u.getCurrentTile().getWorldPositionCenter(), path.get( path.size-1 ).getWorldPositionCenter() );
+                }
+            }
+        }
+        shapeRenderer.end();
     }
 }

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Color;
  * @version 6/21/2017
  */
 public class Constants {
+    public static boolean DEBUGGING = false;
     public static final int WIDTH_UNITS = 32;
     public static final int HEIGHT_UNITS = 18;
 

@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.redtoorange.warbound.ai.UnitOrder;
 import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -92,7 +93,7 @@ public class Peon extends Unit {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( !movementController.isIdle() ) {
+        if( currentOrder != UnitOrder.IDLE ) {
             updateSpriteFacing();
             animationTime += deltaTime;
         }
