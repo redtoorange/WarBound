@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
-import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
@@ -135,8 +134,6 @@ public class Building implements GameObject {
                     currentTiles[x][y].setOccupier( this );
                 }
             }
-
-            currentTiles[0][0].setColor( Color.BLUE );
         }
 
         return success;

@@ -2,7 +2,6 @@ package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.controllers.BuildingController;
 
 /**
  * BuildingFactory.java - Description
@@ -27,4 +26,6 @@ public class BuildingFactory {
                 new TextureRegion( new Texture( "wc2_buildings/farm.png" ) ),
                 2, 2,  controller);
     }
+
+
 }

@@ -6,8 +6,11 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.redtoorange.warbound.Constants;
 import com.redtoorange.warbound.ControlState;
+import com.redtoorange.warbound.buildings.BuildingController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.ui.UIController;
+import com.redtoorange.warbound.units.UnitController;
 import com.redtoorange.warbound.units.UnitFactory;
 
 /**
@@ -54,7 +57,7 @@ public class PlayerController implements ClickListener {
         inputMultiplexer.addProcessor( clickController );
         clickController.addListener( this );
 
-        resourceController = new ResourceController( 0, 0, 0, 4, 10 );
+        resourceController = new ResourceController( 1000, 0, 0, 4, 10 );
 
         unitController = new UnitController( this );
         unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 25 ) ) );
@@ -208,14 +211,17 @@ public class PlayerController implements ClickListener {
                 case SELECTING:
                     selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
 
-                    if( unitController.selectUnits( selectionController.getStartTouch(), selectionController.getEndTouch() ) )
+                    if( unitController.selectUnits( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
                         controlState = ControlState.UNITS_SELECTED;
+                    }
 
-                    else if( buildingController.selectBuilding( selectionController.getStartTouch(), selectionController.getEndTouch() ) )
+                    else if( buildingController.selectBuilding( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
                         controlState = ControlState.BUILDING_SELECTED;
+                    }
 
-                    else
+                    else {
                         controlState = ControlState.IDLE;
+                    }
 
                     break;
 

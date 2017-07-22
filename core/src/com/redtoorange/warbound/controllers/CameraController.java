@@ -79,15 +79,16 @@ public class CameraController {
         currentMouseX = Gdx.input.getX();
         currentMouseY = Gdx.input.getY();
 
-        if( currentMouseX < scrollZoneHor)
-            cameraDelta.x = -1;
-        if( currentMouseX > Gdx.graphics.getWidth() - scrollZoneHor)
-            cameraDelta.x = 1;
-
-        if( currentMouseY < scrollZoneVert)
-            cameraDelta.y = 1;
-        if( currentMouseY > Gdx.graphics.getHeight() - scrollZoneVert)
-            cameraDelta.y = -1;
+        //Mouse scroll disabled for now
+//        if( currentMouseX < scrollZoneHor)
+//            cameraDelta.x = -1;
+//        if( currentMouseX > Gdx.graphics.getWidth() - scrollZoneHor)
+//            cameraDelta.x = 1;
+//
+//        if( currentMouseY < scrollZoneVert)
+//            cameraDelta.y = 1;
+//        if( currentMouseY > Gdx.graphics.getHeight() - scrollZoneVert)
+//            cameraDelta.y = -1;
 
         camera.translate( cameraDelta.scl( deltaTime * speed) );
     }

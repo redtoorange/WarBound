@@ -10,7 +10,6 @@ import com.redtoorange.warbound.ai.Facing;
 import com.redtoorange.warbound.ai.MovementController;
 import com.redtoorange.warbound.ai.UnitOrder;
 import com.redtoorange.warbound.controllers.PlayerController;
-import com.redtoorange.warbound.controllers.UnitController;
 import com.redtoorange.warbound.map.MapTile;
 
 /**

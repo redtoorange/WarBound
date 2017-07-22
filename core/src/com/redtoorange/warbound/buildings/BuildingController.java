@@ -1,6 +1,7 @@
-package com.redtoorange.warbound.controllers;
+package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -8,9 +9,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.ControlState;
-import com.redtoorange.warbound.buildings.Building;
+import com.redtoorange.warbound.controllers.CameraController;
+import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.ui.ControlButtonState;
+import com.redtoorange.warbound.units.UnitType;
 
 /**
  * BuildingController.java - Description
@@ -74,6 +78,12 @@ public class BuildingController {
             if( currentTile != null)
                 currentBuilding.setPosition( currentTile );
         }
+
+        if( !placingBuilding && currentBuilding != null ){
+            if( Gdx.input.isKeyJustPressed( Input.Keys.P ))
+                if( currentBuilding instanceof Barracks)
+                    ((Barracks)currentBuilding).queueUnit( UnitType.PEON );
+        }
     }
 
     public void draw( SpriteBatch batch ) {
@@ -121,7 +131,13 @@ public class BuildingController {
                 currentBuilding = b;
         }
 
-        return (currentBuilding != null);
+        boolean anythingSelected = currentBuilding != null;
+
+        if( anythingSelected && currentBuilding instanceof Barracks){
+            owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.BARRACKS );
+        }
+
+        return anythingSelected;
     }
 
     /**
@@ -129,6 +145,8 @@ public class BuildingController {
      */
     public void deselectBuilding(){
         currentBuilding = null;
+        owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.DEFAULT );
+
     }
 
     /**
@@ -150,5 +168,9 @@ public class BuildingController {
 
     public PlayerController getOwner() {
         return owner;
+    }
+
+    public Building getCurrentBuilding() {
+        return currentBuilding;
     }
 }

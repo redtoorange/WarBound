@@ -2,7 +2,6 @@ package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.redtoorange.warbound.Resource;
-import com.redtoorange.warbound.controllers.BuildingController;
 
 /**
  * Barracks.java - Description

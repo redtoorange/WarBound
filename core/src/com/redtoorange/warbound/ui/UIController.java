@@ -1,4 +1,4 @@
-package com.redtoorange.warbound.controllers;
+package com.redtoorange.warbound.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -7,19 +7,18 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Value;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.redtoorange.warbound.Resource;
-import com.redtoorange.warbound.buildings.BuildingFactory;
+import com.redtoorange.warbound.controllers.PlayerController;
+import com.redtoorange.warbound.controllers.ResourceController;
 
 /**
  * UIController.java - Description
@@ -28,6 +27,7 @@ import com.redtoorange.warbound.buildings.BuildingFactory;
  * @version 7/19/2017
  */
 public class UIController {
+//    private ImageButton.ImageButtonStyle genericStyle;
     private PlayerController owner;
     private ResourceController resourceController;
 
@@ -43,17 +43,20 @@ public class UIController {
     private Label usedFoodLabel;
     private Label availableFoodLabel;
 
-    private Table debuggingTable;
-    public Label debuggingLabel;
+    private ControlButton[] buttonGrid;
 
     public UIController( PlayerController owner, InputMultiplexer multiplexer ) {
         this.owner = owner;
+
+        buttonGrid = new ControlButton[9];
 
         guiCamera = new OrthographicCamera( Gdx.graphics.getWidth(), Gdx.graphics.getHeight() );
         viewport = new ScreenViewport( guiCamera );
 
         VisUI.load();
         guiSkin = VisUI.getSkin();
+
+//        genericStyle = new ImageButton.ImageButtonStyle( new ImageButton( guiSkin ).getStyle() );
 
         guiStage = new Stage( viewport );
         rootTable = new Table( guiSkin );
@@ -62,7 +65,7 @@ public class UIController {
         rootTable.setFillParent( true );
         rootTable.setDebug( true );
 
-        rootTable.top();
+        rootTable.center();
 
 
         Pixmap pix = new Pixmap( 1, 1, Pixmap.Format.RGB888 );
@@ -71,51 +74,80 @@ public class UIController {
 
         TextureRegionDrawable tex = new TextureRegionDrawable( new TextureRegion( new Texture( pix ) ) );
 
-        initBuildPanel( tex );
+        initControlPanel( tex );
         initResourcePanel( tex );
 
         multiplexer.addProcessor( guiStage );
-
-        debuggingTable = new Table( guiSkin );
-        debuggingTable.setDebug( true );
-        debuggingTable.setFillParent( true );
-        debuggingLabel = new Label( "Debug Info", guiSkin );
-        debuggingTable.add( debuggingLabel );
-        guiStage.addActor( debuggingTable );
     }
 
-    private void initBuildPanel( TextureRegionDrawable tex ) {
-        Table buildings = new Table( guiSkin );
+    Table controlPanel;
+    Table buildingPanel;
 
-        rootTable.add( buildings ).expandY().left().width( Gdx.graphics.getWidth() * 0.15f ).height( Gdx.graphics.getHeight()  );
-        buildings.setBackground( tex );
+    private void initControlPanel( TextureRegionDrawable tex ) {
+        //Control Panel is three stacked tables, each 33% of the panel height
+        controlPanel = new Table( guiSkin );
+        controlPanel.background( tex );
+        controlPanel.setDebug( true );
 
-        Button farmButton = new Button( guiSkin );
-        farmButton.add( "Farm" );
-        farmButton.addListener( new ChangeListener() {
-            @Override
-            public void changed( ChangeEvent event, Actor actor ) {
-                owner.getBuildingController().beginPlacing( BuildingFactory.BuildFarm( owner.getBuildingController() ) );
-            }
-        } );
-        buildings.add( farmButton );
+        rootTable.add( controlPanel )
+                .left()
+                .width( Value.percentWidth( 0.15f, rootTable ) )
+                .height( Value.percentHeight( 1, rootTable )  );
 
-        Button barracksButton = new Button( guiSkin );
-        barracksButton.add( "Barracks" );
-        barracksButton.addListener( new ChangeListener() {
-            @Override
-            public void changed( ChangeEvent event, Actor actor ) {
-                owner.getBuildingController().beginPlacing( BuildingFactory.BuildBarracks( owner.getBuildingController() ) );
-            }
-        } );
-        buildings.add( barracksButton );
+
+        Table minimapPanel = new Table( guiSkin );
+        minimapPanel.add( "Minimap?" ).center();
+        controlPanel.add( minimapPanel )
+                .width( Value.percentWidth( 1, controlPanel ) )
+                .height( Value.percentHeight( 0.33f, controlPanel ) );
+
+        controlPanel.row();
+
+        Table statPanel = new Table( guiSkin );
+        statPanel.add( "Unit stats or selection list" ).center();
+        controlPanel.add( statPanel )
+                .width( Value.percentWidth( 1, controlPanel ) )
+                .height( Value.percentHeight( 0.33f, controlPanel ) );
+
+        controlPanel.row();
+
+
+        buildingPanel = new Table( guiSkin );
+        controlPanel.add( buildingPanel )
+                .width( Value.percentWidth( 1, controlPanel ) )
+                .height( Value.percentHeight( 0.33f, controlPanel ) );
+        createBuildingPanel();
     }
 
+    private void createBuildingPanel() {
+        buildingPanel.clearChildren();
+
+        for( int i = 0; i < buttonGrid.length; i++){
+            if( i > 0 && i % 3 == 0)
+                buildingPanel.row();
+
+            buttonGrid[i] = createButton( buildingPanel );
+        }
+    }
+
+    private ControlButton createButton( Table parentTable ){
+        ControlButton button = new ControlButton( guiSkin );
+
+        parentTable.add( button )
+                .width( Value.percentWidth( 1.0f/3.0f, parentTable )  )
+                .height( Value.percentHeight( 1.0f/3.0f, parentTable ) );
+
+        return button;
+    }
+
+    public void changeControlState( ControlButtonState.ButtonLayout layout){
+        ControlButtonState.setLayout( layout, this );
+    }
 
 
     private void initResourcePanel( TextureRegionDrawable tex ) {
         Table resources = new Table( guiSkin );
-        rootTable.add( resources ).center().top().expandX().width( Gdx.graphics.getWidth() * 0.85f );
+        rootTable.add( resources ).center().top().expandX().width( Value.percentWidth( 0.85f, rootTable ) );
         resources.setBackground( tex );
         float cellWidth = 100.0f;
         float spacingWidth = 50.0f;
@@ -182,6 +214,14 @@ public class UIController {
     }
 
     public void resize( int width, int height ) {
-        viewport.update( width, height );
+        guiStage.getViewport().update( width, height, true);
+    }
+
+    public void swapControls(){
+
+    }
+
+    public ControlButton[] getButtonGrid() {
+        return buttonGrid;
     }
 }

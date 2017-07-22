@@ -1,12 +1,12 @@
 package com.redtoorange.warbound.buildings;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.controllers.BuildingController;
+import com.redtoorange.warbound.Resource;
+import com.redtoorange.warbound.controllers.ResourceController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Peon;
 import com.redtoorange.warbound.units.UnitFactory;
+import com.redtoorange.warbound.units.UnitType;
 
 /**
  * Barracks.java - Description
@@ -15,32 +15,57 @@ import com.redtoorange.warbound.units.UnitFactory;
  * @version 7/19/2017
  */
 public class Barracks extends Building {
-    private float coolDown = .10f;
-    private float currentTick = coolDown;
-    private int productionAmount = 10;
-
-    private MapTile rallyPoint;
+    private boolean producing = false;
+    private float progress = 0.0f;
+    private float coolDown = 1.0f;
 
     public Barracks( String name, TextureRegion texture, int width, int height, BuildingController controller ) {
         super( name, texture, width, height, controller );
+    }
+
+    public void queueUnit( UnitType unitType ){
+        if( !producing){
+            if( checkResources( unitType )){
+                producing = true;
+                ResourceController rc = owner.getResourceController();
+
+                rc.changeResource( Resource.GOLD, -unitType.goldCost);
+                rc.changeResource( Resource.WOOD, -unitType.woodCost);
+                rc.changeResource( Resource.OIL, -unitType.oilCost);
+                rc.changeResource( Resource.FOOD_USED, unitType.foodCost);
+            }
+        }
+    }
+
+    public void cancelQueued(){
+        producing = false;
     }
 
     @Override
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( Gdx.input.isKeyJustPressed( Input.Keys.P ))
-            produceUnit();
-//        if( state == State.PRODUCING ){
-//            currentTick -= deltaTime;
-//            if(  currentTick <= 0.0f ){
-//                currentTick += coolDown;
-//                produceUnit();
-//            }
-//        }
+        if( producing){
+            progress += deltaTime;
+
+            if( progress >= coolDown){
+                produceUnit();
+                progress = 0.0f;
+                producing = false;
+            }
+        }
     }
 
+    private boolean checkResources(UnitType unit){
+        ResourceController rc = owner.getResourceController();
 
+        return (
+                rc.getResource( Resource.GOLD ) >= unit.goldCost &&
+                rc.getResource( Resource.WOOD ) >= unit.woodCost &&
+                rc.getResource( Resource.OIL ) >= unit.oilCost &&
+                rc.getResource( Resource.FOOD_STORED ) - rc.getResource( Resource.FOOD_USED )>= unit.foodCost
+                );
+    }
 
     private void produceUnit(){
         MapTile tile = currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );

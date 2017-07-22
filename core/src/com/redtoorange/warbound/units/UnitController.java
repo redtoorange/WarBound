@@ -1,4 +1,4 @@
-package com.redtoorange.warbound.controllers;
+package com.redtoorange.warbound.units;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -8,8 +8,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.controllers.CameraController;
+import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapTile;
-import com.redtoorange.warbound.units.Unit;
+import com.redtoorange.warbound.ui.ControlButtonState;
 
 /**
  * UnitController.java - Handle AI for all units.
@@ -75,7 +77,13 @@ public class UnitController {
                 selectedUnits.add( u );
         }
 
-        return (selectedUnits.size > 0);
+        boolean anythingSelected = (selectedUnits.size > 0);
+
+        if( anythingSelected ){
+            owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.PEON );
+        }
+
+        return anythingSelected;
     }
 
 
@@ -87,6 +95,8 @@ public class UnitController {
             u.select( false );
 
         selectedUnits.clear();
+        owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.DEFAULT );
+
     }
 
     /**

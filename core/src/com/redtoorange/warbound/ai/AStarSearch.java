@@ -82,6 +82,11 @@ public class AStarSearch {
      * @return  Heuristic coast of the movement
      */
     public static double Heuristic( MapTile a, MapTile b ) {
-        return Math.abs( a.getWorldPosition().x - b.getWorldPosition().x ) + Math.abs( a.getWorldPosition().y - b.getWorldPosition().y );
+        double cost = Math.abs( a.getWorldPosition().x - b.getWorldPosition().x ) + Math.abs( a.getWorldPosition().y - b.getWorldPosition().y );
+
+        if( a.getMapX() != b.getMapX() && a.getMapY() != b.getMapY())
+            cost += 0.001;
+
+        return cost;
     }
 }
