@@ -17,6 +17,7 @@ import com.redtoorange.warbound.GameObject;
 public class MapTile {
     public static final String TAG = MapTile.class.getSimpleName();
 
+
     private final MapController controller;
     private final float worldX;
     private final float worldY;

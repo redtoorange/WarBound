@@ -2,7 +2,6 @@ package com.redtoorange.warbound.ai;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.map.MapTile;
@@ -16,13 +15,14 @@ import com.redtoorange.warbound.units.Unit;
  */
 public class MovementController {
     public static final String TAG = MovementController.class.getSimpleName();
+    private static final float SQRT_2 = 1.4f;
 
     public Facing unitFacing = Facing.SOUTH;
 
     private static final float ARRIVAL_THRESHOLD = 0.05f;
 
     enum MoveState{
-        IDLE, MOVING, ARRIVED, NEW_ORDER
+        IDLE, MOVING, ARRIVED, NEW_ORDER, BLOCKED
     }
 
     private MoveState state;
@@ -61,6 +61,9 @@ public class MovementController {
             case ARRIVED:
                 calculateNextTile();
                 break;
+            case BLOCKED:
+                calculateNextTile();
+                break;
         }
 
         if( Gdx.input.isKeyJustPressed( Input.Keys.K )) {
@@ -74,17 +77,11 @@ public class MovementController {
         state = MoveState.NEW_ORDER;
     }
 
+    float progress = 0.0f;
+
     private void moveTowardNext( float deltaTime ){
-        float x = MathUtils.lerp( prevTile.getWorldPosition().x, nextTile.getWorldPosition().x, deltaTime );
-        float y = MathUtils.lerp( prevTile.getWorldPosition().y, nextTile.getWorldPosition().y, deltaTime );
-
-        Vector2 amount = new Vector2( deltaVelocity.x, deltaVelocity.y );
-        amount.scl( deltaTime * owner.getSpeed() );
-        owner.translate( amount );
-
-        owner.move( new Vector2( x, y ) );
-
-        if( hasArrivedAtNext() ) {
+        if( progress >= 1.0f && !diagnol || progress >= SQRT_2 && diagnol ) {
+            progress = 0.0f;
 
             if( nextTile != null ) {
                 owner.move( nextTile.getWorldPosition() );
@@ -96,6 +93,11 @@ public class MovementController {
                     state = MoveState.ARRIVED;
                     break;
             }
+        }
+        else{
+            progress += deltaTime * owner.getSpeed();
+            Vector2 newPos = prevTile.getWorldPosition().lerp( nextTile.getWorldPosition(), progress / ((diagnol)?SQRT_2:1.0f) );
+            owner.move( newPos);
         }
     }
 
@@ -143,7 +145,7 @@ public class MovementController {
     }
 
     private void calculateNextTile(){
-        deltaVelocity.set( 0, 0 );
+        progress = 0.0f;
 
         //Create a new path
         calculateNewPath();
@@ -153,18 +155,27 @@ public class MovementController {
         if( path != null && path.size >  0) {
             nextTile = path.pop();
 
-            deltaVelocity.set( nextTile.getWorldPosition().sub( owner.getCurrentTile().getWorldPosition() ) ).nor();
+            if( nextTile.blocked()) {
+                state = MoveState.BLOCKED;
+            }
+            else{
+                deltaVelocity.set( nextTile.getWorldPosition().sub( owner.getCurrentTile().getWorldPosition() ) ).nor();
 
-            prevTile = owner.getCurrentTile();
-            owner.setCurrentTile( nextTile );
+                prevTile = owner.getCurrentTile();
+                owner.setCurrentTile( nextTile );
 
-            state = MoveState.MOVING;
-            updateFacing();
+                state = MoveState.MOVING;
+                updateFacing();
+
+                diagnol = !(unitFacing == Facing.NORTH || unitFacing == Facing.SOUTH || unitFacing == Facing.EAST || unitFacing == Facing.WEST);
+            }
         }
         else{
             completeOrder();
         }
     }
+
+    boolean diagnol = false;
 
     /**
      * Calculate a new path from the unit's current tile to the destination, if the destination
@@ -173,15 +184,13 @@ public class MovementController {
     MapTile tempDestination;
 
     private void calculateNewPath(){
-//        Gdx.app.log(TAG, "Calculating Path");
         if(owner.getCurrentTile() == destination){
-//            Gdx.app.log(TAG, "Owner is at destination");
-            path = null;
+            completeOrder();
         }
         else if( owner.getCurrentTile() == tempDestination && destination.blocked()){
-//            Gdx.app.log(TAG, "Owner is at temp destination, destination was blocked.");
-            path = null;
+            completeOrder();
         }
+
         else {
             if ( destination.blocked() && destination.getOccupier() != owner ) {
 //                Gdx.app.log(TAG, "Destination is blocked, finding a new destination.");
@@ -193,16 +202,13 @@ public class MovementController {
             }
 
             if(owner.getCurrentTile() == destination){
-//                Gdx.app.log(TAG, "Owner is at destination");
-                path = null;
+                completeOrder();
             }
             else if( owner.getCurrentTile() == tempDestination && destination.blocked()){
-//                Gdx.app.log(TAG, "Owner is at temp destination, destination was blocked.");
-                path = null;
+                completeOrder();
             }
             else if( tempDestination == null) {
-                path = null;
-//                Gdx.app.log(TAG, "No viable route.");
+                completeOrder();
             }
             else {
 //                Gdx.app.log(TAG, "Path Calculated");
@@ -237,8 +243,10 @@ public class MovementController {
         state = MoveState.IDLE;
 
         deltaVelocity.set( 0, 0 );
+        progress = 0.0f;
 
         path = null;
+        destination = tempDestination = null;
         nextTile = null;
     }
 

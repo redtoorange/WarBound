@@ -3,6 +3,7 @@ package com.redtoorange.warbound.ai;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.Unit;
 
 /**
  * AStarSearch.java - Description
@@ -38,12 +39,15 @@ public class AStarSearch {
             }
 
             for ( MapTile next : graph.Neighbors( current ) ) {
-                double newCost = costSoFar.get( current ) + graph.Cost( current, next );
-                if ( !costSoFar.containsKey( next ) || newCost < costSoFar.get( next ) ) {
-                    costSoFar.put( next, newCost );
-                    double priority = newCost + Heuristic( next, goal );
-                    frontier.Enqueue( next, priority );
-                    cameFrom.put( next, current );
+                //Allow tiles are occupied by units, but they are much more costly.
+                if( !next.blocked() || (next.isOccupied() && next.getOccupier() instanceof Unit) ){
+                    double newCost = costSoFar.get( current ) + graph.Cost( current, next );
+                    if ( !costSoFar.containsKey( next ) || newCost < costSoFar.get( next ) ) {
+                        costSoFar.put( next, newCost );
+                        double priority = newCost + Heuristic( next, goal );
+                        frontier.Enqueue( next, priority );
+                        cameFrom.put( next, current );
+                    }
                 }
             }
         }
@@ -56,6 +60,9 @@ public class AStarSearch {
         while( cameFrom.containsKey( start )){
             temp = cameFrom.get( temp );
 
+            if( temp == null)
+                break;
+
             if( temp.equals( start )) {
                 completePath = true;
                 break;
@@ -65,7 +72,7 @@ public class AStarSearch {
         }
 
         if( !completePath)
-            path = null;
+            path.clear();
     }
 
     /**

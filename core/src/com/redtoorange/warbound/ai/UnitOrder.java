@@ -7,5 +7,5 @@ package com.redtoorange.warbound.ai;
  * @version 7/21/2017
  */
 public enum UnitOrder {
-    IDLE, ATTACK, MOVE, HARVEST
+    IDLE, ATTACK, MOVE, HARVEST, BLOCKED
 }

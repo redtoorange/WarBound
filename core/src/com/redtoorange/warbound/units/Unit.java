@@ -28,7 +28,7 @@ public abstract class Unit implements GameObject {
     protected UnitController controller;
     protected PlayerController owner;
 
-    protected float speed = 5;
+    protected float speed = 2.5f;
 
     protected MovementController movementController;
 
