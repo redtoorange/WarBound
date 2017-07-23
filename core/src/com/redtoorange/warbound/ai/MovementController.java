@@ -43,8 +43,6 @@ public class MovementController {
     public void execute( float deltaTime ){
         switch( state ){
             case IDLE:
-                if( owner.getCurrentOrder() == UnitOrder.MOVE )
-                    owner.setCurrentOrder( UnitOrder.IDLE );
                 return;
 
             case NEW_ORDER:
@@ -267,7 +265,7 @@ public class MovementController {
         System.out.println( "\tDestination: " + destination);
         System.out.println( "\tTempDestination: " + tempDestination);
         System.out.println( "\tNext Tile: " + nextTile);
-        System.out.println("\tCurrent State: " + state);
+        System.out.println("\tCurrent BuildingState: " + state);
         System.out.println("\tDelta Velocity: " + deltaVelocity);
 
     }

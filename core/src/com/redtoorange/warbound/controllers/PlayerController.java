@@ -21,9 +21,9 @@ import com.redtoorange.warbound.units.UnitFactory;
  */
 public class PlayerController implements ClickListener {
     private SpriteBatch batch;
-
     private InputMultiplexer inputMultiplexer;
 
+    //Controllers
     private BuildingController buildingController;
     private UnitController unitController;
     private UIController uiController;
@@ -32,45 +32,40 @@ public class PlayerController implements ClickListener {
     private ResourceController resourceController;
     private SelectionController selectionController;
 
+    /** Loaded in by the game engine. */
     private MapController mapController;
 
     private ControlState controlState = ControlState.IDLE;
 
 
-    public PlayerController( MapController mapController) {
+    public PlayerController( MapController mapController ) {
         this.mapController = mapController;
 
-        batch = new SpriteBatch(  );
+        batch = new SpriteBatch();
 
         initControllers();
     }
 
-    private void initControllers( ){
-        inputMultiplexer = new InputMultiplexer(  );
-        Gdx.input.setInputProcessor( inputMultiplexer );
-
+    private void initControllers() {
         selectionController = new SelectionController( this );
-        uiController = new UIController( this, inputMultiplexer );
-        cameraController = new CameraController(25, 25);
-
-        clickController = new MouseClickController();
-        inputMultiplexer.addProcessor( clickController );
-        clickController.addListener( this );
-
-        resourceController = new ResourceController( 1000, 0, 0, 4, 10 );
-
+        cameraController = new CameraController( this, 25, 25 );
+        buildingController = new BuildingController( this );
         unitController = new UnitController( this );
-        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 25 ) ) );
-        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  25, 20 )  ) );
-        unitController.addUnit( com.redtoorange.warbound.units.UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  20, 25 )  ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos(  20, 20 )  ) );
+        resourceController = new ResourceController( this, 1000, 0, 0, 4, 10 );
 
-        buildingController = new BuildingController( this, mapController, cameraController );
+        inputMultiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor( inputMultiplexer );
+        uiController = new UIController( this, inputMultiplexer );
+        clickController = new MouseClickController( this );
+        inputMultiplexer.addProcessor( clickController );
+
+        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 25, 25 ) ) );
+        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 25, 20 ) ) );
+        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 20, 25 ) ) );
+        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 20, 20 ) ) );
     }
 
-
-
-    public void update( float deltaTime ){
+    public void update( float deltaTime ) {
         uiController.update( deltaTime );
         cameraController.handleInput( deltaTime );
 
@@ -78,10 +73,10 @@ public class PlayerController implements ClickListener {
         buildingController.update( deltaTime );
     }
 
-    public void draw(){
+    public void draw() {
         cameraController.update();
 
-        batch.setProjectionMatrix( cameraController.combineMatrix() );
+        batch.setProjectionMatrix( cameraController.combinedMatrix() );
         batch.begin();
 
         mapController.draw( batch );
@@ -90,27 +85,125 @@ public class PlayerController implements ClickListener {
 
         batch.end();
 
-        if( controlState == ControlState.SELECTING )
+        if ( controlState == ControlState.SELECTING )
             selectionController.renderSelectionBox();
-        if( controlState == ControlState.UNITS_SELECTED )
-            unitController.renderSelected( cameraController, Constants.SELECTION_COLOR);
-        if( controlState == ControlState.BUILDING_SELECTED )
-            buildingController.renderSelected( cameraController, Constants.SELECTION_COLOR);
+
+        if ( placingABuilding() )
+            unitController.renderSelected();
+
+        if ( controlState == ControlState.BUILDING_SELECTED )
+            buildingController.renderSelected( );
+
         uiController.draw();
 
-        if( Constants.DEBUGGING ){
+        if ( Constants.DEBUGGING ) {
             unitController.debugDraw();
         }
 
     }
 
-
-
-    public void resize( int width, int height ) {
-        cameraController.resize( width, height );
-        uiController.resize( width, height);
+    /** @return Is the player placing a building while units are selected */
+    private boolean placingABuilding() {
+        return controlState == ControlState.UNITS_SELECTED || controlState == ControlState.PLACING_BUILDING && unitController.hasUnitsSelected();
     }
 
+    /** Resize the CameraController and the UIController. */
+    public void resize( int width, int height ) {
+        cameraController.resize( width, height );
+        uiController.resize( width, height );
+    }
+
+    @Override
+    public boolean touchDown( int screenX, int screenY, int pointer, int button ) {
+        if ( button == Input.Buttons.LEFT ) {
+            switch ( controlState ) {
+                case UNITS_SELECTED:
+                case BUILDING_SELECTED:
+                case IDLE:
+
+                    selectionController.setStartTouch( cameraController.getMouseWorldPosition() );
+                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
+
+                    controlState = ControlState.SELECTING;
+                    break;
+
+                case PLACING_BUILDING:
+                    if ( buildingController.placeBuilding() ) {
+                        if ( unitController.hasUnitsSelected() )
+                            controlState = ControlState.UNITS_SELECTED;
+                        else
+                            controlState = ControlState.IDLE;
+                    }
+                    break;
+            }
+        }
+
+        if ( button == Input.Buttons.RIGHT ) {
+            switch ( controlState ) {
+                case IDLE:
+                    break;
+
+                case UNITS_SELECTED:
+                    MapTile goal = mapController.getTileByWorldPos( cameraController.getMouseWorldPosition() );
+                    if ( goal != null )
+                        unitController.giveMoveOrder( goal );
+                    break;
+
+                case PLACING_BUILDING:
+                    buildingController.cancelPlacing();
+                    if ( unitController.hasUnitsSelected() )
+                        controlState = ControlState.UNITS_SELECTED;
+                    else
+                        controlState = ControlState.IDLE;
+                    break;
+
+                default:
+                    setControlState( ControlState.IDLE );
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean touchUp( int screenX, int screenY, int pointer, int button ) {
+        if ( button == Input.Buttons.LEFT ) {
+            switch ( controlState ) {
+                case IDLE:
+                    break;
+
+                case SELECTING:
+                    unitController.deselectUnits();
+                    buildingController.deselectBuilding();
+
+                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
+
+                    if ( unitController.selectUnits( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
+                        controlState = ControlState.UNITS_SELECTED;
+                    } else if ( buildingController.selectBuilding( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
+                        controlState = ControlState.BUILDING_SELECTED;
+                    } else {
+                        controlState = ControlState.IDLE;
+                    }
+
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged( int screenX, int screenY, int pointer ) {
+        if ( controlState == ControlState.SELECTING )
+            selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
+
+        return false;
+    }
+
+    //-------------------------------------------------------------------------------
+    //      Getters
+    //-------------------------------------------------------------------------------
     public BuildingController getBuildingController() {
         return buildingController;
     }
@@ -139,126 +232,16 @@ public class PlayerController implements ClickListener {
         return mapController;
     }
 
-    @Override
-    public boolean touchDown( int screenX, int screenY, int pointer, int button ) {
-        if( button == Input.Buttons.LEFT ){
-            switch( controlState ){
-                case IDLE:
-                    selectionController.setStartTouch( cameraController.getMouseWorldPosition() );
-                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
-
-                    controlState = ControlState.SELECTING;
-                    break;
-
-                case SELECTING:
-                    break;
-
-                case UNITS_SELECTED:
-                    unitController.deselectUnits();
-
-                    selectionController.setStartTouch( cameraController.getMouseWorldPosition() );
-                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
-
-                    controlState = ControlState.SELECTING;
-                    break;
-
-                case BUILDING_SELECTED:
-                    buildingController.deselectBuilding();
-
-                    selectionController.setStartTouch( cameraController.getMouseWorldPosition() );
-                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
-
-                    controlState = ControlState.SELECTING;
-                    break;
-
-                case PLACING_BUILDING:
-                    if( buildingController.placeBuilding() )
-                        controlState = ControlState.IDLE;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        if( button == Input.Buttons.RIGHT ){
-            switch( controlState ){
-                case IDLE:
-                    break;
-
-                case UNITS_SELECTED:
-                    MapTile goal = mapController.getTileByWorldPos( cameraController.getMouseWorldPosition() );
-                    if( goal != null)
-                        unitController.giveMoveOrder( goal );
-
-                    break;
-
-                default:
-                    setControlState( ControlState.IDLE );
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean touchUp( int screenX, int screenY, int pointer, int button ) {
-        if( button == Input.Buttons.LEFT ){
-            switch( controlState ){
-                case IDLE:
-                    break;
-
-                case SELECTING:
-                    selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
-
-                    if( unitController.selectUnits( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
-                        controlState = ControlState.UNITS_SELECTED;
-                    }
-
-                    else if( buildingController.selectBuilding( selectionController.getStartTouch(), selectionController.getEndTouch() ) ) {
-                        controlState = ControlState.BUILDING_SELECTED;
-                    }
-
-                    else {
-                        controlState = ControlState.IDLE;
-                    }
-
-                    break;
-
-                case UNITS_SELECTED:
-                    break;
-
-                case BUILDING_SELECTED:
-                    break;
-
-                case PLACING_BUILDING:
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged( int screenX, int screenY, int pointer ) {
-        if( controlState == ControlState.SELECTING )
-            selectionController.setEndTouch( cameraController.getMouseWorldPosition() );
-
-        return false;
-    }
-
     public ControlState getControlState() {
         return controlState;
     }
 
     public void setControlState( ControlState controlState ) {
-
-        switch(this.controlState){
+        switch ( this.controlState ) {
             case UNITS_SELECTED:
-                unitController.deselectUnits();
+                if ( controlState != ControlState.PLACING_BUILDING ) {
+                    unitController.deselectUnits();
+                }
                 break;
 
             case BUILDING_SELECTED:
@@ -272,4 +255,5 @@ public class PlayerController implements ClickListener {
 
         this.controlState = controlState;
     }
+
 }

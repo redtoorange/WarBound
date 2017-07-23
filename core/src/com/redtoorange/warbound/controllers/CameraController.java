@@ -16,6 +16,8 @@ import com.redtoorange.warbound.Constants;
  * @version 6/21/2017
  */
 public class CameraController {
+
+    private PlayerController owner;
     private OrthographicCamera camera;
     private Viewport viewport;
 
@@ -28,11 +30,12 @@ public class CameraController {
     private int currentMouseX;
     private int currentMouseY;
 
-    public CameraController(){
-        this( 0, 0);
+    public CameraController( PlayerController owner ){
+        this( owner, 0, 0);
     }
 
-    public CameraController( float startX, float startY){
+    public CameraController( PlayerController owner, float startX, float startY){
+        this.owner = owner;
         camera = new OrthographicCamera( );
         camera.position.set( startX, startY, 0 );
 
@@ -59,7 +62,7 @@ public class CameraController {
         scrollZoneVert = (int)(Gdx.graphics.getHeight() * scollZone);
     }
 
-    public Matrix4 combineMatrix(){
+    public Matrix4 combinedMatrix(){
         return camera.combined;
     }
 
@@ -93,9 +96,12 @@ public class CameraController {
         camera.translate( cameraDelta.scl( deltaTime * speed) );
     }
 
+    /** Get the mouse position in screen space (pixels) */
     public Vector2 getMouseScreenPosition(){
         return new Vector2( currentMouseX, currentMouseY );
     }
+
+    /** Get the mouse position in world units (distance from world center) */
     public Vector2 getMouseWorldPosition(){
         return viewport.unproject( getMouseScreenPosition() );
     }

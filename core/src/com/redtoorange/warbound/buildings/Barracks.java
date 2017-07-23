@@ -15,18 +15,25 @@ import com.redtoorange.warbound.units.UnitType;
  * @version 7/19/2017
  */
 public class Barracks extends Building {
+    public static final String TAG = Barracks.class.getSimpleName();
+
     private boolean producing = false;
     private float progress = 0.0f;
-    private float coolDown = 1.0f;
+    private float totalTime = 0.0f;
 
     public Barracks( String name, TextureRegion texture, int width, int height, BuildingController controller ) {
         super( name, texture, width, height, controller );
+
+        canBeEntered = true;
     }
 
     public void queueUnit( UnitType unitType ){
-        if( !producing){
+        if( !producing && !isUnderConstruction()){
             if( checkResources( unitType )){
                 producing = true;
+
+                progress = totalTime = unitType.productionTime;
+
                 ResourceController rc = owner.getResourceController();
 
                 rc.changeResource( Resource.GOLD, -unitType.goldCost);
@@ -46,11 +53,11 @@ public class Barracks extends Building {
         super.update( deltaTime );
 
         if( producing){
-            progress += deltaTime;
+            progress -= deltaTime;
+            System.out.println( "\t" + ((1 - (progress/totalTime)) * 100) + "%" );
 
-            if( progress >= coolDown){
+            if( progress <= 0.0f){
                 produceUnit();
-                progress = 0.0f;
                 producing = false;
             }
         }
@@ -68,7 +75,7 @@ public class Barracks extends Building {
     }
 
     private void produceUnit(){
-        MapTile tile = currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );
+        MapTile tile = getSpotOnPerimeter();
 
         if( tile != null){
             Peon p = (Peon) UnitFactory.BuildFootman( owner.getUnitController(), currentTiles[0][0].getEmptyOutsideArea( width, height, -1, -1 ) );
@@ -77,6 +84,5 @@ public class Barracks extends Building {
         else{
             System.out.println( "No Empty Tiles!" );
         }
-
     }
 }

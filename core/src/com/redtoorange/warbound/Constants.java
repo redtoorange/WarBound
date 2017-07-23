@@ -14,4 +14,9 @@ public class Constants {
     public static final int HEIGHT_UNITS = 18;
 
     public static final Color SELECTION_COLOR = new Color( 0, 1, 0, 0.75f);
+
+    public static float MINING_TIME = 1.5f;
+    public static float CHOPPING_TIME = 1.5f;
+
+    public static float DROP_OFF_TIME = 1.0f;
 }

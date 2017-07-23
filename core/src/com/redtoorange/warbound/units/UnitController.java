@@ -24,74 +24,74 @@ public class UnitController {
 
     private PlayerController owner;
 
-    private Array<Unit> units;
-    private Array<Unit> selectedUnits;
+    private Array< Unit > units;
+    private Array< Unit > selectedUnits;
     private ShapeRenderer shapeRenderer;
 
-    public UnitController( PlayerController owner ){
+    private boolean initialized = false;
+    private CameraController cameraController;
+
+    public UnitController( PlayerController owner ) {
         this.owner = owner;
 
-        units = new Array< Unit >(  );
-        selectedUnits = new Array< Unit >(  );
+        units = new Array< Unit >();
+        selectedUnits = new Array< Unit >();
 
-        shapeRenderer = new ShapeRenderer(  );
+        shapeRenderer = new ShapeRenderer();
     }
 
+    private void initialize(){
+        cameraController = owner.getCameraController();
+    }
 
-    public void addUnit( Unit u){
-        if( !units.contains( u, true ))
+    public void addUnit( Unit u ) {
+        if ( !units.contains( u, true ) )
             units.add( u );
     }
 
-    public void removeUnit( Unit u){
+    public void removeUnit( Unit u ) {
         units.removeValue( u, true );
     }
 
-    public void update( float deltaTime ){
-        for( Unit u : units )
+    public void update( float deltaTime ) {
+        if( !initialized )
+            initialize();
+
+        for ( Unit u : units )
             u.update( deltaTime );
     }
 
-    public void draw( SpriteBatch batch ){
-        for(Unit u : units)
+    public void draw( SpriteBatch batch ) {
+        for ( Unit u : units )
             u.draw( batch );
     }
 
-    /**
-     *
-     * @param start
-     * @param end
-     * @return
-     */
-    public boolean selectUnits( Vector2 start, Vector2 end){
+
+    public boolean selectUnits( Vector2 start, Vector2 end ) {
         float x = Math.min( start.x, end.x );
         float y = Math.min( start.y, end.y );
 
         float width = Math.max( start.x, end.x ) - x;
         float height = Math.max( start.y, end.y ) - y;
 
-        Rectangle selectionRect = new Rectangle( x, y, width, height);
+        Rectangle selectionRect = new Rectangle( x, y, width, height );
 
-        for( Unit u : units){
-            if( selectionRect.overlaps( u.getBoundingBox() ) )
+        for ( Unit u : units ) {
+            if ( selectionRect.overlaps( u.getBoundingBox() ) )
                 selectedUnits.add( u );
         }
 
-        boolean anythingSelected = (selectedUnits.size > 0);
+        boolean anythingSelected = ( selectedUnits.size > 0 );
 
-        if( anythingSelected ){
+        if ( anythingSelected ) {
             owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.PEON );
         }
 
         return anythingSelected;
     }
 
-
-    /**
-     *
-     */
-    public void deselectUnits(){
-        for(Unit u : selectedUnits)
+    public void deselectUnits() {
+        for ( Unit u : selectedUnits )
             u.select( false );
 
         selectedUnits.clear();
@@ -99,32 +99,26 @@ public class UnitController {
 
     }
 
-    /**
-     *
-     * @param goal
-     */
-    public void giveMoveOrder( MapTile goal){
+    public void giveMoveOrder( MapTile goal ) {
         for ( Unit u : selectedUnits )
             u.giveMoveOrder( goal );
     }
 
-    /**
-     *
-     * @param cameraController
-     * @param selectionBoxColor
-     */
-    public void renderSelected( CameraController cameraController, Color selectionBoxColor) {
+    public void renderSelected( ) {
         Gdx.gl.glLineWidth( 2f );
-        shapeRenderer.setProjectionMatrix( cameraController.combineMatrix() );
+        shapeRenderer.setProjectionMatrix( cameraController.combinedMatrix() );
         shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
-        shapeRenderer.setColor( selectionBoxColor );
+        shapeRenderer.setColor( Constants.SELECTION_COLOR );
 
 
-        for( Unit u : selectedUnits){
+        for ( Unit u : selectedUnits ) {
+            if( u.isInsideBuilding() )
+                continue;
+
             Rectangle box = u.getBoundingBox();
 
-            shapeRenderer.rect(box.x, box.y, box.width, box.height );
-            if( Constants.DEBUGGING)
+            shapeRenderer.rect( box.x, box.y, box.width, box.height );
+            if ( Constants.DEBUGGING )
                 u.getMovementController().debuggingInfo();
         }
 
@@ -135,21 +129,25 @@ public class UnitController {
         return owner;
     }
 
-    public void debugDraw(){
+    public void debugDraw() {
         shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
         shapeRenderer.setColor( Color.BLUE );
-        for( Unit u : units ){
-            if( !u.getMovementController().isIdle() ){
+        for ( Unit u : units ) {
+            if ( !u.getMovementController().isIdle() ) {
                 Array< MapTile > path = u.getMovementController().getPath();
-                if( path != null && path.size > 0){
+                if ( path != null && path.size > 0 ) {
 
-                    for( int i = 0; i < path.size-1; i++){
-                        shapeRenderer.line( path.get( i ).getWorldPositionCenter(), path.get( i+1 ).getWorldPositionCenter() );
+                    for ( int i = 0; i < path.size - 1; i++ ) {
+                        shapeRenderer.line( path.get( i ).getWorldPositionCenter(), path.get( i + 1 ).getWorldPositionCenter() );
                     }
-                    shapeRenderer.line(u.getCurrentTile().getWorldPositionCenter(), path.get( path.size-1 ).getWorldPositionCenter() );
+                    shapeRenderer.line( u.getCurrentTile().getWorldPositionCenter(), path.get( path.size - 1 ).getWorldPositionCenter() );
                 }
             }
         }
         shapeRenderer.end();
+    }
+
+    public boolean hasUnitsSelected() {
+        return selectedUnits.size > 0;
     }
 }

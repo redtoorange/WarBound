@@ -34,6 +34,7 @@ public abstract class Unit implements GameObject {
     protected MapTile currentTile = null;
     protected Sprite sprite;
     protected boolean selected = false;
+    protected boolean insideBuilding = false;
 
     public Unit( MapTile startTile, TextureRegion texture, UnitController controller){
         sprite = new Sprite( texture );
@@ -53,6 +54,8 @@ public abstract class Unit implements GameObject {
                 break;
             case MOVE:
                 movementController.execute( deltaTime );
+                if( movementController.isIdle())
+                    currentOrder = UnitOrder.IDLE;
                 break;
         }
 
@@ -108,9 +111,11 @@ public abstract class Unit implements GameObject {
         if( currentTile != null)
             currentTile.setOccupier( null );
 
-        currentTile = newTile;
-        currentTile.setOccupier( this );
 
+        currentTile = newTile;
+
+        if( currentTile != null)
+            currentTile.setOccupier( this );
     }
 
     public MovementController getMovementController() {
@@ -123,5 +128,15 @@ public abstract class Unit implements GameObject {
 
     public void setCurrentOrder( UnitOrder currentOrder ) {
         this.currentOrder = currentOrder;
+    }
+
+    public boolean isInsideBuilding() {
+        return insideBuilding;
+    }
+    public void ejectFromBuilding( MapTile mapTile ){
+        setCurrentTile( mapTile );
+        move( mapTile.getWorldPosition() );
+        insideBuilding = false;
+        currentOrder = UnitOrder.IDLE;
     }
 }

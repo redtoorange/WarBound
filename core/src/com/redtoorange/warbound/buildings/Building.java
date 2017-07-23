@@ -10,6 +10,7 @@ import com.redtoorange.warbound.GameObject;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.Unit;
 
 /**
  * Building.java - Description
@@ -18,11 +19,7 @@ import com.redtoorange.warbound.map.MapTile;
  * @version 7/18/2017
  */
 public class Building implements GameObject {
-    public static String TAG = Building.class.getSimpleName();
-
-    public enum State{
-        PLACING, PRODUCING
-    }
+    public static final String TAG = Building.class.getSimpleName();
 
     protected BuildingController controller;
     protected PlayerController owner;
@@ -34,7 +31,13 @@ public class Building implements GameObject {
     protected int height;
     protected boolean validLocations;
 
-    protected State state = State.PLACING;
+    protected BuildingState buildingState = BuildingState.PLACING;
+    private Unit builder;
+
+    private float amountConstructed = 0.0f;
+    private float constructionTime = 5.0f;
+
+    protected boolean canBeEntered = false;
 
     public Building( String name, TextureRegion texture, int width, int height, BuildingController controller){
         this.name = name;
@@ -56,15 +59,14 @@ public class Building implements GameObject {
 
     @Override
     public void draw( SpriteBatch batch ) {
-//        validatePosition();
         if( validLocations )
             sprite.draw( batch );
     }
 
-    //Try to see if a building can be placed on the hovered tile
+    /**Try to see if a building can be placed on the hovered tile*/
     public void setPosition( MapTile hoveredTile ) {
         unpaintTiles();
-        MapController mc = controller.getMapController();
+        MapController mc = controller.getOwner().getMapController();
         validLocations = true;
 
         for ( int x = 0; x < width; x++ ) {
@@ -117,17 +119,31 @@ public class Building implements GameObject {
         }
     }
 
-    public void cancel(){
+    public void cancelPlacement(){
         unpaintTiles();
     }
 
+    public void cancelConstruction(){
+        System.out.println( "**Cancel this building**" );
+
+        if( builder != null )
+            builder.ejectFromBuilding( getSpotOnPerimeter() );
+
+        for ( int x = 0; x < width; x++ ) {
+            for ( int y = 0; y < height; y++ ) {
+                currentTiles[x][y].setOccupier( null );
+            }
+        }
+    }
+
+    /** Commit the building to it's current placement. */
     public boolean placeBuilding(){
         boolean success = validLocations && validatePlacement();
 
         if( success ){
             unpaintTiles();
             sprite.setAlpha( 1.0f );
-            state = State.PRODUCING;
+            buildingState = BuildingState.CONSTRUCTION_STARTED;
 
             for ( int x = 0; x < width; x++ ) {
                 for ( int y = 0; y < height; y++ ) {
@@ -139,6 +155,7 @@ public class Building implements GameObject {
         return success;
     }
 
+    /** Ensure all the tiles the building is on are valid. */
     protected boolean validatePlacement(){
         boolean valid = true;
 
@@ -156,6 +173,49 @@ public class Building implements GameObject {
         return sprite.getBoundingRectangle();
     }
 
+    public MapTile getSpotOnPerimeter(){
+        return currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );
+    }
 
+    public boolean canBeEntered() {
+        return buildingState == BuildingState.COMPLETE && canBeEntered;
+    }
 
+    public boolean isUnderConstruction(){
+        return buildingState == BuildingState.CONSTRUCTION_STARTED;
+    }
+
+    public boolean isBeingBuilt(){
+        return buildingState == BuildingState.BEING_CONSTRUCTED;
+    }
+
+    public BuildingState getBuildingState() {
+        return buildingState;
+    }
+
+    public void finishConstruction(){
+        buildingState = BuildingState.COMPLETE;
+    }
+
+    public void setBuildingState( BuildingState buildingState ) {
+        this.buildingState = buildingState;
+    }
+
+    public void beginConstruction( Unit unit ){
+        this.builder = unit;
+        buildingState = BuildingState.BEING_CONSTRUCTED;
+    }
+
+    public void constructBuilding( float amount ){
+        if( isBeingBuilt() ){
+            amountConstructed += amount;
+            if( amountConstructed >= constructionTime){
+                finishConstruction();
+            }
+        }
+    }
+
+    public boolean isComplete(){
+        return buildingState == BuildingState.COMPLETE;
+    }
 }

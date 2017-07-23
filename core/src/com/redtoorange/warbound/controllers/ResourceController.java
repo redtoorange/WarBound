@@ -9,13 +9,17 @@ import com.redtoorange.warbound.Resource;
  * @version 7/19/2017
  */
 public class ResourceController {
+    private PlayerController owner;
+
     private int gold;
     private int wood;
     private int oil;
     private int usedFood;
     private int availableFood;
 
-    public ResourceController( int gold, int wood, int oil, int usedFood, int availableFood ) {
+    public ResourceController( PlayerController owner, int gold, int wood, int oil, int usedFood, int availableFood ) {
+        this.owner = owner;
+
         this.gold = gold;
         this.wood = wood;
         this.oil = oil;

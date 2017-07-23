@@ -17,12 +17,8 @@ public class Farm extends Building {
     }
 
     @Override
-    public boolean placeBuilding() {
-        boolean success = super.placeBuilding();
-
-        if( success && state == State.PRODUCING )
-            owner.getResourceController().changeResource( Resource.FOOD_STORED, productionAmount );
-
-        return success;
+    public void finishConstruction() {
+        super.finishConstruction();
+        owner.getResourceController().changeResource( Resource.FOOD_STORED, productionAmount );
     }
 }

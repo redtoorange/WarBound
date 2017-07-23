@@ -30,7 +30,7 @@ public class SelectionController {
         if( cameraController == null )
             cameraController = owner.getCameraController();
 
-        shapeRenderer.setProjectionMatrix(cameraController.combineMatrix());
+        shapeRenderer.setProjectionMatrix(cameraController.combinedMatrix());
         shapeRenderer.begin( ShapeRenderer.ShapeType.Filled );
         shapeRenderer.setColor( Constants.SELECTION_COLOR );
 

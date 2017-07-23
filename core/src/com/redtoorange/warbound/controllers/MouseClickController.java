@@ -10,17 +10,24 @@ import com.badlogic.gdx.utils.Array;
  * @version 6/21/2017
  */
 public class MouseClickController implements InputProcessor {
+    private PlayerController owner;
     private Array<ClickListener> listeners;
 
-    public MouseClickController(){
+
+    public MouseClickController( PlayerController owner ){
+        this.owner = owner;
         listeners = new Array< ClickListener >(  );
+
+        addListener( owner );
     }
 
+    /** Add a listener to be notified of mouse events. */
     public void addListener( ClickListener listener ){
         if( !listeners.contains( listener, true ))
             listeners.add( listener );
     }
 
+    /** Remove a listener from the mouse events notification. */
     public boolean removeListener( ClickListener listener){
         boolean success = listeners.contains( listener, true );
 

@@ -4,7 +4,9 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.redtoorange.warbound.Constants;
 import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.map.MapTile;
 
 /**
@@ -14,12 +16,17 @@ import com.redtoorange.warbound.map.MapTile;
  * @version 7/19/2017
  */
 public class Peon extends Unit {
+    public static final String TAG = Peon.class.getSimpleName();
+
     private float animationTime = 0.0f;
     private Animation currentAnimation;
 
     private Animation[] animations;
     private TextureAtlas textureAtlas;
     private boolean flipped = false;
+
+    private Building targetBuilding;
+
 
     private static final int NORTH = 0, N_EAST = 1, EAST = 2, S_EAST = 3, SOUTH = 4;
 
@@ -84,13 +91,24 @@ public class Peon extends Unit {
     }
 
     public void draw( SpriteBatch batch ) {
-        sprite.setRegion( currentAnimation.getKeyFrame( animationTime ) );
-        sprite.setFlip( flipped, false );
-        super.draw( batch );
+        if( !insideBuilding ){
+            sprite.setRegion( currentAnimation.getKeyFrame( animationTime ) );
+            sprite.setFlip( flipped, false );
+            super.draw( batch );
+        }
     }
+
+    float timer = 1.0f;
 
     public void update( float deltaTime ) {
         super.update( deltaTime );
+
+        if( currentOrder == UnitOrder.ENTER_BUILDING && !insideBuilding){
+            movementController.execute( deltaTime );
+            if( movementController.isIdle()){
+                enterBuilding();
+            }
+        }
 
         if( currentOrder != UnitOrder.IDLE ) {
             updateSpriteFacing();
@@ -98,5 +116,89 @@ public class Peon extends Unit {
         }
         else
             animationTime = 0.0f;
+
+
+        switch ( currentOrder ){
+            case CONSTRUCT_BUILDING:
+                targetBuilding.constructBuilding( deltaTime );
+
+                if( !targetBuilding.isBeingBuilt())
+                    exitBuilding();
+
+                break;
+            case DEPOSIT:
+                timer -= deltaTime;
+
+                if( timer <= 0.0f )
+                    exitBuilding();
+
+                break;
+        }
     }
+
+    private void enterBuilding() {
+        boolean shouldEnter = false;
+
+        if( targetBuilding.isUnderConstruction() ){
+            System.out.println( "**Constructing building**" );
+            currentOrder = UnitOrder.CONSTRUCT_BUILDING;
+            targetBuilding.beginConstruction( this );
+            shouldEnter = true;
+        }
+        else if( targetBuilding.canBeEntered()){
+            System.out.println( "**Depositing at building**" );
+            currentOrder = UnitOrder.DEPOSIT;
+            timer = Constants.DROP_OFF_TIME;
+            shouldEnter = true;
+        }
+
+        if( shouldEnter ){
+            insideBuilding = true;
+            setCurrentTile( null );
+        }
+        else{
+            System.out.println( "**Cannot enter building**" );
+            currentOrder = UnitOrder.IDLE;
+            targetBuilding = null;
+        }
+
+    }
+
+    private void exitBuilding() {
+        switch( currentOrder){
+            case DEPOSIT:
+                System.out.println( "**Deposited materials.**" );
+                break;
+            case CONSTRUCT_BUILDING:
+                System.out.println( "**Finished Building.**" );
+                break;
+        }
+
+        setCurrentTile( targetBuilding.getSpotOnPerimeter() );
+        sprite.setPosition( currentTile.getWorldPosition().x, currentTile.getWorldPosition().y );
+        insideBuilding = false;
+
+        targetBuilding = null;
+        currentOrder = UnitOrder.IDLE;
+    }
+
+    public void moveToBuilding( Building building, MapTile destination ){
+        targetBuilding = building;
+
+        currentOrder = UnitOrder.ENTER_BUILDING;
+        movementController.setDestination( destination );
+    }
+
+    @Override
+    public void giveMoveOrder( MapTile destination ) {
+        if( destination.isOccupied() && destination.getOccupier() instanceof Building){
+            moveToBuilding( (Building)destination.getOccupier(), destination );
+        }
+        else {
+            targetBuilding = null;
+            super.giveMoveOrder( destination );
+        }
+    }
+
+
 }
