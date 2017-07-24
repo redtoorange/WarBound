@@ -20,6 +20,10 @@ import com.redtoorange.warbound.units.Unit;
  */
 public abstract class Building implements GameObject {
     public static final String TAG = Building.class.getSimpleName();
+
+    public static final int STARTED = 0, PARTIAL = 1, COMPLETE = 2;
+    protected TextureRegion[] regions;
+
     protected BuildingController controller;
     protected PlayerController owner;
 
@@ -38,9 +42,11 @@ public abstract class Building implements GameObject {
 
     protected boolean canBeEntered = false;
 
-    public Building( String name, TextureRegion texture, int width, int height, BuildingController controller){
+    public Building( String name, TextureRegion[] regions, int width, int height, BuildingController controller){
         this.name = name;
-        sprite = new Sprite( texture );
+        this.regions = regions;
+
+        sprite = new Sprite( regions[ COMPLETE ] );
         sprite.setAlpha( 0.5f );
         sprite.setSize( width, height );
         currentTiles = new MapTile[width][height];
@@ -146,6 +152,8 @@ public abstract class Building implements GameObject {
 
         if( success ){
             unpaintTiles();
+
+            sprite.setRegion( regions[STARTED] );
             sprite.setAlpha( 1.0f );
             buildingState = BuildingState.CONSTRUCTION_HALTED;
 
@@ -195,6 +203,7 @@ public abstract class Building implements GameObject {
 
 
     protected void finishConstruction(){
+        sprite.setRegion( regions[COMPLETE] );
         buildingState = BuildingState.COMPLETE;
         controller.updateUI();
     }
@@ -204,6 +213,10 @@ public abstract class Building implements GameObject {
     public void constructBuilding( float amount ){
         if( isCurrentlyBeingBuilt() ){
             amountConstructed += amount;
+            if( amountConstructed / constructionTime >= 0.5f){
+                sprite.setRegion( regions[PARTIAL] );
+            }
+
             if( amountConstructed >= constructionTime){
                 finishConstruction();
             }

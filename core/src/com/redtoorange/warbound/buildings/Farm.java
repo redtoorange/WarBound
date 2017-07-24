@@ -1,5 +1,6 @@
 package com.redtoorange.warbound.buildings;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.redtoorange.warbound.Resource;
 
@@ -12,8 +13,14 @@ import com.redtoorange.warbound.Resource;
 public class Farm extends Building {
     private int productionAmount = 10;
 
-    public Farm( String name, TextureRegion texture, int width, int height, BuildingController controller ) {
-        super( name, texture, width, height, controller );
+    private static TextureRegion[] regions = {
+            new TextureRegion( new Texture( "wc2_buildings/small_building_started.png" ) ),
+            new TextureRegion( new Texture( "wc2_buildings/farm_building.png" ) ),
+            new TextureRegion( new Texture( "wc2_buildings/farm.png" ) ),
+    };
+
+    public Farm( String name, int width, int height, BuildingController controller ) {
+        super( name, regions, width, height, controller );
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.redtoorange.warbound.buildings;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Peon;
@@ -15,12 +16,18 @@ import com.redtoorange.warbound.units.UnitType;
 public class Barracks extends Building {
     public static final String TAG = Barracks.class.getSimpleName();
 
+    private static TextureRegion[] regions = {
+            new TextureRegion( new Texture( "wc2_buildings/large_building_started.png" ) ),
+            new TextureRegion( new Texture( "wc2_buildings/barracks_building.png" ) ),
+            new TextureRegion( new Texture( "wc2_buildings/barracks.png" ) ),
+    };
+
     private boolean producing = false;
     private float progress = 0.0f;
     private float totalTime = 0.0f;
 
-    public Barracks( String name, TextureRegion texture, int width, int height, BuildingController controller ) {
-        super( name, texture, width, height, controller );
+    public Barracks( String name, int width, int height, BuildingController controller ) {
+        super( name, regions, width, height, controller );
 
         canBeEntered = true;
     }
