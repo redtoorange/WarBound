@@ -147,7 +147,22 @@ public class UnitController {
         shapeRenderer.end();
     }
 
+    public Peon getFirstSelectedPeon(){
+        Peon p = null;
+        for ( Unit u : selectedUnits ) {
+            if( u instanceof Peon){
+                p = (Peon) u;
+                break;
+            }
+        }
+        return p;
+    }
+
     public boolean hasUnitsSelected() {
         return selectedUnits.size > 0;
+    }
+
+    public void deselectUnit( Unit u ){
+        selectedUnits.removeValue( u, true );
     }
 }

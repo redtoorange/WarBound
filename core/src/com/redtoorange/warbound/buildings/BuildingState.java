@@ -7,5 +7,5 @@ package com.redtoorange.warbound.buildings;
  * @version 7/23/2017
  */
 public enum BuildingState {
-    PLACING, CONSTRUCTION_STARTED, BEING_CONSTRUCTED, COMPLETE
+    PLACING, CONSTRUCTION_HALTED, BEING_CONSTRUCTED, COMPLETE
 }

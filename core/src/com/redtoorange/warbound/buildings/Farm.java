@@ -17,8 +17,13 @@ public class Farm extends Building {
     }
 
     @Override
-    public void finishConstruction() {
+    protected void finishConstruction() {
         super.finishConstruction();
         owner.getResourceController().changeResource( Resource.FOOD_STORED, productionAmount );
+    }
+
+    @Override
+    public BuildingType getType() {
+        return BuildingType.FARM;
     }
 }

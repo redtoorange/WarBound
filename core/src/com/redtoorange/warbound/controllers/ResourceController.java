@@ -72,4 +72,15 @@ public class ResourceController {
                 break;
         }
     }
+
+    public boolean canAfford( int gold, int wood, int oil, int food){
+        return this.gold >= gold && this.wood >= wood && this.oil >= oil && (availableFood-usedFood)>= food;
+    }
+
+    public void chargeAmount( int gold, int wood, int oil, int food){
+        this.gold -= gold;
+        this.wood -= wood;
+        this.oil -= oil;
+        this.usedFood += food;
+    }
 }

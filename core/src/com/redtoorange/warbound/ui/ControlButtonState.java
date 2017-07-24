@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.redtoorange.warbound.buildings.Barracks;
-import com.redtoorange.warbound.buildings.BuildingFactory;
+import com.redtoorange.warbound.buildings.BuildingType;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.units.UnitType;
 
@@ -16,7 +16,7 @@ import com.redtoorange.warbound.units.UnitType;
  */
 public class ControlButtonState {
     public enum ButtonLayout{
-        DEFAULT, PEON, BARRACKS
+        DEFAULT, PEON, BARRACKS, CONSTRUCTION
     }
 
     public static void setLayout( ButtonLayout layout, UIController uiController ){
@@ -36,6 +36,8 @@ public class ControlButtonState {
             case DEFAULT:
                 setDefaultGrid( buttonGrid, owner );
                 break;
+            case CONSTRUCTION:
+                setConstructionGrid( buttonGrid, owner);
         }
     }
 
@@ -48,7 +50,7 @@ public class ControlButtonState {
         buttonGrid[0].setChangeListener( new ChangeListener() {
             @Override
             public void changed( ChangeEvent event, Actor actor ) {
-                owner.getBuildingController().beginPlacing( BuildingFactory.BuildFarm( owner.getBuildingController() ) );
+                owner.getBuildingController().beginPlacing( BuildingType.FARM );
             }
         } );
 
@@ -56,7 +58,7 @@ public class ControlButtonState {
         buttonGrid[1].setChangeListener( new ChangeListener() {
             @Override
             public void changed( ChangeEvent event, Actor actor ) {
-                owner.getBuildingController().beginPlacing( BuildingFactory.BuildBarracks( owner.getBuildingController() ) );
+                owner.getBuildingController().beginPlacing( BuildingType.BARRACKS );
             }
         } );
     }
@@ -71,6 +73,16 @@ public class ControlButtonState {
                     if( barracks != null )
                         barracks.queueUnit( UnitType.PEON );
                 }
+            }
+        } );
+    }
+
+    private static void setConstructionGrid( ControlButton[] buttonGrid, final PlayerController owner ) {
+        buttonGrid[8].setImage( new Texture( "badlogic.jpg" ));
+        buttonGrid[8].setChangeListener( new ChangeListener() {
+            @Override
+            public void changed( ChangeEvent event, Actor actor ) {
+                owner.getBuildingController().cancelCurrentConstruction();
             }
         } );
     }

@@ -18,9 +18,8 @@ import com.redtoorange.warbound.units.Unit;
  * @author Andrew McGuiness
  * @version 7/18/2017
  */
-public class Building implements GameObject {
+public abstract class Building implements GameObject {
     public static final String TAG = Building.class.getSimpleName();
-
     protected BuildingController controller;
     protected PlayerController owner;
 
@@ -55,6 +54,11 @@ public class Building implements GameObject {
 
     @Override
     public void update( float deltaTime ) {
+        switch ( buildingState ){
+            case BEING_CONSTRUCTED:
+                constructBuilding( deltaTime );
+                break;
+        }
     }
 
     @Override
@@ -127,7 +131,7 @@ public class Building implements GameObject {
         System.out.println( "**Cancel this building**" );
 
         if( builder != null )
-            builder.ejectFromBuilding( getSpotOnPerimeter() );
+            builder.ejectFromBuilding( getCentralTile() );
 
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
@@ -143,7 +147,7 @@ public class Building implements GameObject {
         if( success ){
             unpaintTiles();
             sprite.setAlpha( 1.0f );
-            buildingState = BuildingState.CONSTRUCTION_STARTED;
+            buildingState = BuildingState.CONSTRUCTION_HALTED;
 
             for ( int x = 0; x < width; x++ ) {
                 for ( int y = 0; y < height; y++ ) {
@@ -181,33 +185,24 @@ public class Building implements GameObject {
         return buildingState == BuildingState.COMPLETE && canBeEntered;
     }
 
-    public boolean isUnderConstruction(){
-        return buildingState == BuildingState.CONSTRUCTION_STARTED;
+    public boolean inReadyForConstruction(){
+        return buildingState == BuildingState.CONSTRUCTION_HALTED;
     }
 
-    public boolean isBeingBuilt(){
+    public boolean isCurrentlyBeingBuilt(){
         return buildingState == BuildingState.BEING_CONSTRUCTED;
     }
 
-    public BuildingState getBuildingState() {
-        return buildingState;
-    }
 
-    public void finishConstruction(){
+    protected void finishConstruction(){
         buildingState = BuildingState.COMPLETE;
+        controller.updateUI();
     }
 
-    public void setBuildingState( BuildingState buildingState ) {
-        this.buildingState = buildingState;
-    }
 
-    public void beginConstruction( Unit unit ){
-        this.builder = unit;
-        buildingState = BuildingState.BEING_CONSTRUCTED;
-    }
 
     public void constructBuilding( float amount ){
-        if( isBeingBuilt() ){
+        if( isCurrentlyBeingBuilt() ){
             amountConstructed += amount;
             if( amountConstructed >= constructionTime){
                 finishConstruction();
@@ -215,7 +210,18 @@ public class Building implements GameObject {
         }
     }
 
+    public void beginConstruction( Unit unit ){
+        this.builder = unit;
+        buildingState = BuildingState.BEING_CONSTRUCTED;
+    }
+
     public boolean isComplete(){
         return buildingState == BuildingState.COMPLETE;
     }
+
+    public MapTile getCentralTile(){
+        return currentTiles[width/2][height/2];
+    }
+
+    public abstract BuildingType getType();
 }

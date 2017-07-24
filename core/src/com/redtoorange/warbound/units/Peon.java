@@ -25,7 +25,7 @@ public class Peon extends Unit {
     private TextureAtlas textureAtlas;
     private boolean flipped = false;
 
-    private Building targetBuilding;
+
 
 
     private static final int NORTH = 0, N_EAST = 1, EAST = 2, S_EAST = 3, SOUTH = 4;
@@ -103,13 +103,6 @@ public class Peon extends Unit {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( currentOrder == UnitOrder.ENTER_BUILDING && !insideBuilding){
-            movementController.execute( deltaTime );
-            if( movementController.isIdle()){
-                enterBuilding();
-            }
-        }
-
         if( currentOrder != UnitOrder.IDLE ) {
             updateSpriteFacing();
             animationTime += deltaTime;
@@ -117,12 +110,16 @@ public class Peon extends Unit {
         else
             animationTime = 0.0f;
 
-
         switch ( currentOrder ){
-            case CONSTRUCT_BUILDING:
-                targetBuilding.constructBuilding( deltaTime );
+            case ENTER_BUILDING:
+                movementController.execute( deltaTime );
+                if( movementController.isIdle())
+                    enterBuilding();
 
-                if( !targetBuilding.isBeingBuilt())
+                break;
+
+            case CONSTRUCT_BUILDING:
+                if( !targetBuilding.isCurrentlyBeingBuilt())
                     exitBuilding();
 
                 break;
@@ -139,12 +136,15 @@ public class Peon extends Unit {
     private void enterBuilding() {
         boolean shouldEnter = false;
 
-        if( targetBuilding.isUnderConstruction() ){
+        //  The building's construction is halted
+        if( targetBuilding.inReadyForConstruction() ){
             System.out.println( "**Constructing building**" );
             currentOrder = UnitOrder.CONSTRUCT_BUILDING;
             targetBuilding.beginConstruction( this );
             shouldEnter = true;
         }
+
+        //  The building is COMPLETE and can be entered
         else if( targetBuilding.canBeEntered()){
             System.out.println( "**Depositing at building**" );
             currentOrder = UnitOrder.DEPOSIT;
@@ -153,6 +153,7 @@ public class Peon extends Unit {
         }
 
         if( shouldEnter ){
+            controller.deselectUnit( this );
             insideBuilding = true;
             setCurrentTile( null );
         }
@@ -174,15 +175,10 @@ public class Peon extends Unit {
                 break;
         }
 
-        setCurrentTile( targetBuilding.getSpotOnPerimeter() );
-        sprite.setPosition( currentTile.getWorldPosition().x, currentTile.getWorldPosition().y );
-        insideBuilding = false;
-
-        targetBuilding = null;
-        currentOrder = UnitOrder.IDLE;
+        ejectFromBuilding( targetBuilding.getSpotOnPerimeter() );
     }
 
-    public void moveToBuilding( Building building, MapTile destination ){
+    private void moveToBuilding( Building building, MapTile destination ){
         targetBuilding = building;
 
         currentOrder = UnitOrder.ENTER_BUILDING;
@@ -199,6 +195,4 @@ public class Peon extends Unit {
             super.giveMoveOrder( destination );
         }
     }
-
-
 }

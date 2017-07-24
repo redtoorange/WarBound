@@ -43,6 +43,8 @@ public class UIController {
     private Label usedFoodLabel;
     private Label availableFoodLabel;
 
+    private Table controlPanel;
+    private Table buildingPanel;
     private ControlButton[] buttonGrid;
 
     public UIController( PlayerController owner, InputMultiplexer multiplexer ) {
@@ -80,8 +82,7 @@ public class UIController {
         multiplexer.addProcessor( guiStage );
     }
 
-    Table controlPanel;
-    Table buildingPanel;
+
 
     private void initControlPanel( TextureRegionDrawable tex ) {
         //Control Panel is three stacked tables, each 33% of the panel height
@@ -189,7 +190,6 @@ public class UIController {
     public void update( float deltaTime ){
         updateResources();
         guiStage.act(deltaTime);
-
     }
 
     public void draw( ){

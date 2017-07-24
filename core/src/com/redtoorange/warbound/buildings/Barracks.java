@@ -1,8 +1,6 @@
 package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.Resource;
-import com.redtoorange.warbound.controllers.ResourceController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Peon;
 import com.redtoorange.warbound.units.UnitFactory;
@@ -28,18 +26,15 @@ public class Barracks extends Building {
     }
 
     public void queueUnit( UnitType unitType ){
-        if( !producing && !isUnderConstruction()){
+        if( !producing && !inReadyForConstruction()){
             if( checkResources( unitType )){
                 producing = true;
-
                 progress = totalTime = unitType.productionTime;
 
-                ResourceController rc = owner.getResourceController();
-
-                rc.changeResource( Resource.GOLD, -unitType.goldCost);
-                rc.changeResource( Resource.WOOD, -unitType.woodCost);
-                rc.changeResource( Resource.OIL, -unitType.oilCost);
-                rc.changeResource( Resource.FOOD_USED, unitType.foodCost);
+                owner.getResourceController().chargeAmount(
+                        unitType.goldCost, unitType.woodCost,
+                        unitType.oilCost, unitType.foodCost
+                );
             }
         }
     }
@@ -52,26 +47,27 @@ public class Barracks extends Building {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( producing){
-            progress -= deltaTime;
-            System.out.println( "\t" + ((1 - (progress/totalTime)) * 100) + "%" );
+        switch ( buildingState ){
+            case COMPLETE:
+                if( producing){
+                    progress -= deltaTime;
+                    System.out.println( "\t" + ((1 - (progress/totalTime)) * 100) + "%" );
 
-            if( progress <= 0.0f){
-                produceUnit();
-                producing = false;
-            }
+                    if( progress <= 0.0f){
+                        produceUnit();
+                        producing = false;
+                    }
+                }
+                break;
         }
+
     }
 
     private boolean checkResources(UnitType unit){
-        ResourceController rc = owner.getResourceController();
-
-        return (
-                rc.getResource( Resource.GOLD ) >= unit.goldCost &&
-                rc.getResource( Resource.WOOD ) >= unit.woodCost &&
-                rc.getResource( Resource.OIL ) >= unit.oilCost &&
-                rc.getResource( Resource.FOOD_STORED ) - rc.getResource( Resource.FOOD_USED )>= unit.foodCost
-                );
+        return owner.getResourceController().canAfford(
+                unit.goldCost, unit.woodCost,
+                unit.oilCost, unit.foodCost
+        );
     }
 
     private void produceUnit(){
@@ -84,5 +80,10 @@ public class Barracks extends Building {
         else{
             System.out.println( "No Empty Tiles!" );
         }
+    }
+
+    @Override
+    public BuildingType getType() {
+        return BuildingType.BARRACKS;
     }
 }

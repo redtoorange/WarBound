@@ -209,18 +209,9 @@ public class MovementController {
                 completeOrder();
             }
             else {
-//                Gdx.app.log(TAG, "Path Calculated");
                 path = new AStarSearch( tempDestination.getController(), owner.getCurrentTile(), tempDestination ).path;
             }
         }
-
-        //Log path data
-//        if( Constants.DEBUGGING ){
-//            if( path != null)
-//                Gdx.app.log(TAG, "Path size: " + path.size);
-//            else
-//                Gdx.app.log(TAG, "Path is null ");
-//        }
     }
 
 

@@ -9,6 +9,7 @@ import com.redtoorange.warbound.GameObject;
 import com.redtoorange.warbound.ai.Facing;
 import com.redtoorange.warbound.ai.MovementController;
 import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -35,6 +36,7 @@ public abstract class Unit implements GameObject {
     protected Sprite sprite;
     protected boolean selected = false;
     protected boolean insideBuilding = false;
+    protected Building targetBuilding;
 
     public Unit( MapTile startTile, TextureRegion texture, UnitController controller){
         sprite = new Sprite( texture );
@@ -48,6 +50,7 @@ public abstract class Unit implements GameObject {
         owner = controller.getOwner();
     }
 
+    /** Handles the default IDLE and MOVE orders. */
     public void update( float deltaTime){
         switch ( currentOrder ){
             case IDLE:
@@ -133,10 +136,12 @@ public abstract class Unit implements GameObject {
     public boolean isInsideBuilding() {
         return insideBuilding;
     }
+
     public void ejectFromBuilding( MapTile mapTile ){
         setCurrentTile( mapTile );
         move( mapTile.getWorldPosition() );
         insideBuilding = false;
         currentOrder = UnitOrder.IDLE;
+        targetBuilding = null;
     }
 }

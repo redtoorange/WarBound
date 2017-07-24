@@ -14,6 +14,8 @@ import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.ui.ControlButtonState;
+import com.redtoorange.warbound.units.Peon;
+import com.redtoorange.warbound.units.UnitController;
 
 /**
  * BuildingController.java - Description
@@ -39,16 +41,60 @@ public class BuildingController {
         shapeRenderer = new ShapeRenderer(  );
     }
 
-    public void beginPlacing( Building b){
-        owner.setControlState( ControlState.PLACING_BUILDING );
-        currentBuilding = b;
-        placingBuilding = true;
+    public void beginPlacing( BuildingType b){
+        if( placingBuilding )
+            cancelPlacing();
+
+        if( checkResources( b ) ){
+            //charge resource
+            owner.setControlState( ControlState.PLACING_BUILDING );
+            currentBuilding = instanceBuilding( b );
+            placingBuilding = true;
+        }
+    }
+
+    private Building instanceBuilding(BuildingType type){
+        Building b = null;
+
+        owner.getResourceController().chargeAmount(
+                type.goldCost, type.woodCost,
+                type.oilCost, type.foodCost
+        );
+
+        switch ( type ){
+            case BARRACKS:
+                b = BuildingFactory.BuildBarracks( this );
+                break;
+            case FARM:
+                b = BuildingFactory.BuildFarm(this);
+                break;
+        }
+
+        return b;
+    }
+
+    private boolean checkResources(BuildingType b){
+        return owner.getResourceController().canAfford(
+                b.goldCost, b.woodCost,
+                b.oilCost, b.foodCost
+        );
     }
 
     public void cancelPlacing(){
+
+        refundCurrentBuilding();
+
         currentBuilding.cancelPlacement();
         currentBuilding = null;
         placingBuilding = false;
+    }
+
+    private void refundCurrentBuilding() {
+        BuildingType type = currentBuilding.getType();
+        owner.getResourceController().chargeAmount(
+                -type.goldCost, -type.woodCost,
+                -type.oilCost, -type.foodCost
+        );
     }
 
     public void addBuilding( Building b){
@@ -88,11 +134,20 @@ public class BuildingController {
 
         if( !placingBuilding && currentBuilding != null && !currentBuilding.isComplete() ){
             if( Gdx.input.isKeyJustPressed( Input.Keys.N )) {
-                currentBuilding.cancelConstruction();
-                removeBuilding( currentBuilding );
-                currentBuilding = null;
-                System.out.println( "** Building Cancelled **" );
+                cancelCurrentConstruction();
             }
+        }
+    }
+
+    public void cancelCurrentConstruction(){
+        if( currentBuilding != null){
+
+            refundCurrentBuilding();
+
+            currentBuilding.cancelConstruction();
+            removeBuilding( currentBuilding );
+            currentBuilding = null;
+            System.out.println( "** Building Cancelled **" );
         }
     }
 
@@ -108,6 +163,14 @@ public class BuildingController {
         boolean placed = currentBuilding.placeBuilding();
 
         if( placed ){
+            UnitController uc = owner.getUnitController();
+            Peon p = uc.getFirstSelectedPeon();
+            MapTile t = currentBuilding.getCentralTile();
+
+            if( p != null && t != null){
+                p.giveMoveOrder( t );
+            }
+
             addBuilding( currentBuilding );
             currentBuilding = null;
             placingBuilding = false;
@@ -135,16 +198,22 @@ public class BuildingController {
         boolean anythingSelected = currentBuilding != null;
 
         if( anythingSelected ){
-            if( !currentBuilding.isComplete() ){
-                System.out.println( "Building under construction, should set menu to reflect that." );
-            }
-            else if( currentBuilding instanceof Barracks ){
-                owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.BARRACKS );
-            }
+            updateUI();
 
         }
 
         return anythingSelected;
+    }
+
+    public void updateUI() {
+        if(currentBuilding != null){
+            if( !currentBuilding.isComplete() ){
+                owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.CONSTRUCTION );
+            }
+            else if( currentBuilding instanceof Barracks ){
+                owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.BARRACKS );
+            }
+        }
     }
 
 

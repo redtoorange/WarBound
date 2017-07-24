@@ -99,7 +99,6 @@ public class PlayerController implements ClickListener {
         if ( Constants.DEBUGGING ) {
             unitController.debugDraw();
         }
-
     }
 
     /** @return Is the player placing a building while units are selected */
