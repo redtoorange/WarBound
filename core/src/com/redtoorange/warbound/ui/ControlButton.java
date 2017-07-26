@@ -30,20 +30,20 @@ public class ControlButton extends ImageButton {
     }
 
     /** Set the button's current action when clicked. */
-    public void setChangeListener( ChangeListener changeListener ) {
-        if ( this.changeListener != null )
-            getListeners().removeValue( this.changeListener, true );
+    public void setChangeListener( ChangeListener p_changeListener ) {
+        if ( changeListener != null )
+            getListeners().removeValue( changeListener, true );
 
-        if ( changeListener != null ) {
-            this.changeListener = changeListener;
-            addListener( this.changeListener );
+        if ( p_changeListener != null ) {
+            changeListener = p_changeListener;
+            addListener( changeListener );
         }
     }
 
     /** Set the button's current Image. */
-    public void setImage( Texture texture ) {
-        if ( texture != null ) {
-            image = new Image( texture );
+    public void setImage( Texture p_texture ) {
+        if ( p_texture != null ) {
+            image = new Image( p_texture );
             getStyle().imageUp = image.getDrawable();
         } else
             getStyle().imageUp = STYLE.imageUp;

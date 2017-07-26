@@ -18,35 +18,33 @@ import com.redtoorange.warbound.units.Unit;
  * @author Andrew McGuiness
  * @version 7/18/2017
  */
-public abstract class Building implements GameObject {
+public abstract class Building extends GameObject {
     public static final String TAG = Building.class.getSimpleName();
 
-    public static final int STARTED = 0, PARTIAL = 1, COMPLETE = 2;
+    protected BuildingType TYPE = BuildingType.NONE;
+    protected static final int STARTED = 0, PARTIAL = 1, COMPLETE = 2;
     protected TextureRegion[] regions;
-
     protected BuildingController controller;
     protected PlayerController owner;
-
     protected String name;
     protected MapTile[][] currentTiles;
     protected Sprite sprite;
     protected int width;
     protected int height;
     protected boolean validLocations;
-
     protected BuildingState buildingState = BuildingState.PLACING;
-    private Unit builder;
-
-    private float amountConstructed = 0.0f;
-    private float constructionTime = 5.0f;
-
+    protected Unit builder;
+    protected float amountConstructed;
+    protected float constructionTime;
     protected boolean canBeEntered = false;
 
-    public Building( String name, TextureRegion[] regions, int width, int height, BuildingController controller){
+    public Building( String name, TextureRegion[] regions, int width, int height, BuildingController controller ) {
+        super( controller );
+
         this.name = name;
         this.regions = regions;
 
-        sprite = new Sprite( regions[ COMPLETE ] );
+        sprite = new Sprite( regions[COMPLETE] );
         sprite.setAlpha( 0.5f );
         sprite.setSize( width, height );
         currentTiles = new MapTile[width][height];
@@ -60,7 +58,7 @@ public abstract class Building implements GameObject {
 
     @Override
     public void update( float deltaTime ) {
-        switch ( buildingState ){
+        switch ( buildingState ) {
             case BEING_CONSTRUCTED:
                 constructBuilding( deltaTime );
                 break;
@@ -69,11 +67,11 @@ public abstract class Building implements GameObject {
 
     @Override
     public void draw( SpriteBatch batch ) {
-        if( validLocations )
+        if ( validLocations )
             sprite.draw( batch );
     }
 
-    /**Try to see if a building can be placed on the hovered tile*/
+    /** Try to see if a building can be placed on the hovered tile */
     public void setPosition( MapTile hoveredTile ) {
         unpaintTiles();
         MapController mc = controller.getOwner().getMapController();
@@ -81,13 +79,13 @@ public abstract class Building implements GameObject {
 
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
-                int gridX = ( hoveredTile.getMapX() - (width / 2) ) + x;
-                int gridY = ( hoveredTile.getMapY() - (height / 2) ) + y;
+                int gridX = ( hoveredTile.getMapX() - ( width / 2 ) ) + x;
+                int gridY = ( hoveredTile.getMapY() - ( height / 2 ) ) + y;
 
                 currentTiles[x][y] = mc.getTileByGridPos( gridX, gridY );
 
                 //A single null tile invalidates the position
-                if (currentTiles[x][y] == null )
+                if ( currentTiles[x][y] == null )
                     validLocations = false;
             }
         }
@@ -100,27 +98,27 @@ public abstract class Building implements GameObject {
 
     }
 
-    public void setPosition( Vector2 pos ){
+    protected void setPosition( Vector2 pos ) {
         sprite.setPosition( pos.x, pos.y );
     }
 
-    //Set all tiles to default color
-    protected void unpaintTiles(){
+    /** Set all tiles to default color */
+    protected void unpaintTiles() {
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
-                if( currentTiles[x][y] != null ) {
+                if ( currentTiles[x][y] != null ) {
                     currentTiles[x][y].setColor( Color.WHITE );
                 }
             }
         }
     }
 
-    //Set the tiles to green if valid or red if blocked
-    protected void paintTiles(){
+    /** Set the tiles to green if valid or red if blocked */
+    protected void paintTiles() {
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
-                if( currentTiles[x][y] != null ) {
-                    if( currentTiles[x][y].blocked() )
+                if ( currentTiles[x][y] != null ) {
+                    if ( currentTiles[x][y].blocked() )
                         currentTiles[x][y].setColor( Color.RED );
                     else
                         currentTiles[x][y].setColor( Color.GREEN );
@@ -129,28 +127,11 @@ public abstract class Building implements GameObject {
         }
     }
 
-    public void cancelPlacement(){
-        unpaintTiles();
-    }
-
-    public void cancelConstruction(){
-        System.out.println( "**Cancel this building**" );
-
-        if( builder != null )
-            builder.ejectFromBuilding( getCentralTile() );
-
-        for ( int x = 0; x < width; x++ ) {
-            for ( int y = 0; y < height; y++ ) {
-                currentTiles[x][y].setOccupier( null );
-            }
-        }
-    }
-
     /** Commit the building to it's current placement. */
-    public boolean placeBuilding(){
+    public boolean placeBuilding() {
         boolean success = validLocations && validatePlacement();
 
-        if( success ){
+        if ( success ) {
             unpaintTiles();
 
             sprite.setRegion( regions[STARTED] );
@@ -162,18 +143,25 @@ public abstract class Building implements GameObject {
                     currentTiles[x][y].setOccupier( this );
                 }
             }
+
+            constructionTime = TYPE.productionTime;
+            amountConstructed = 0.0f;
         }
 
         return success;
     }
 
+    public void cancelPlacement() {
+        unpaintTiles();
+    }
+
     /** Ensure all the tiles the building is on are valid. */
-    protected boolean validatePlacement(){
+    protected boolean validatePlacement() {
         boolean valid = true;
 
         for ( int x = 0; x < width; x++ ) {
             for ( int y = 0; y < height; y++ ) {
-                if( currentTiles[x][y].blocked() )
+                if ( currentTiles[x][y].blocked() )
                     valid = false;
             }
         }
@@ -181,11 +169,53 @@ public abstract class Building implements GameObject {
         return valid;
     }
 
-    public Rectangle getBoundingBox(){
+    public Rectangle getBoundingBox() {
         return sprite.getBoundingRectangle();
     }
 
-    public MapTile getSpotOnPerimeter(){
+    public MapTile getCentralTile() {
+        return currentTiles[width / 2][height / 2];
+    }
+
+    protected void finishConstruction() {
+        System.out.println( TYPE + " complete!");
+        sprite.setRegion( regions[COMPLETE] );
+        buildingState = BuildingState.COMPLETE;
+        controller.updateUI();
+    }
+
+    public void constructBuilding( float amount ) {
+        if ( isCurrentlyBeingBuilt() ) {
+            amountConstructed += amount;
+            if ( amountConstructed / constructionTime >= 0.5f ) {
+                sprite.setRegion( regions[PARTIAL] );
+            }
+
+            if ( amountConstructed >= constructionTime ) {
+                finishConstruction();
+            }
+        }
+    }
+
+    public void beginConstruction( Unit unit ) {
+        this.builder = unit;
+        buildingState = BuildingState.BEING_CONSTRUCTED;
+    }
+
+    public void cancelConstruction() {
+        System.out.println( "**Cancel this building**" );
+
+        if ( builder != null )
+            builder.ejectFromBuilding( getCentralTile() );
+
+        for ( int x = 0; x < width; x++ ) {
+            for ( int y = 0; y < height; y++ ) {
+                currentTiles[x][y].setOccupier( null );
+            }
+        }
+    }
+
+    public MapTile getSpotOnPerimeter() {
         return currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );
     }
 
@@ -193,48 +223,19 @@ public abstract class Building implements GameObject {
         return buildingState == BuildingState.COMPLETE && canBeEntered;
     }
 
-    public boolean inReadyForConstruction(){
+    public boolean isReadyForConstruction() {
         return buildingState == BuildingState.CONSTRUCTION_HALTED;
     }
 
-    public boolean isCurrentlyBeingBuilt(){
+    public boolean isCurrentlyBeingBuilt() {
         return buildingState == BuildingState.BEING_CONSTRUCTED;
     }
 
-
-    protected void finishConstruction(){
-        sprite.setRegion( regions[COMPLETE] );
-        buildingState = BuildingState.COMPLETE;
-        controller.updateUI();
-    }
-
-
-
-    public void constructBuilding( float amount ){
-        if( isCurrentlyBeingBuilt() ){
-            amountConstructed += amount;
-            if( amountConstructed / constructionTime >= 0.5f){
-                sprite.setRegion( regions[PARTIAL] );
-            }
-
-            if( amountConstructed >= constructionTime){
-                finishConstruction();
-            }
-        }
-    }
-
-    public void beginConstruction( Unit unit ){
-        this.builder = unit;
-        buildingState = BuildingState.BEING_CONSTRUCTED;
-    }
-
-    public boolean isComplete(){
+    public boolean isComplete() {
         return buildingState == BuildingState.COMPLETE;
     }
 
-    public MapTile getCentralTile(){
-        return currentTiles[width/2][height/2];
+    public BuildingType getType(){
+        return TYPE;
     }
-
-    public abstract BuildingType getType();
 }

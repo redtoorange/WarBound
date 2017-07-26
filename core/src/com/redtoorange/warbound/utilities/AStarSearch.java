@@ -1,8 +1,9 @@
-package com.redtoorange.warbound.ai;
+package com.redtoorange.warbound.utilities;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.map.WeightedGraph;
 import com.redtoorange.warbound.units.Unit;
 
 /**
@@ -15,7 +16,7 @@ public class AStarSearch {
     public ObjectMap< MapTile, MapTile > cameFrom = new ObjectMap< MapTile, MapTile >();
     public ObjectMap< MapTile, Double > costSoFar = new ObjectMap< MapTile, Double >();
 
-    public Array<MapTile> path = new Array< MapTile >(  );
+    public Array< MapTile > path = new Array< MapTile >();
 
     /**
      * Calculate a path from start to goal on the given graph.
@@ -40,7 +41,7 @@ public class AStarSearch {
 
             for ( MapTile next : graph.Neighbors( current ) ) {
                 //Allow tiles are occupied by units, but they are much more costly.
-                if( !next.blocked() || (next.isOccupied() && next.getOccupier() instanceof Unit) ){
+                if ( !next.blocked() || ( next.isOccupied() && next.getOccupier() instanceof Unit ) ) {
                     double newCost = costSoFar.get( current ) + graph.Cost( current, next );
                     if ( !costSoFar.containsKey( next ) || newCost < costSoFar.get( next ) ) {
                         costSoFar.put( next, newCost );
@@ -57,34 +58,34 @@ public class AStarSearch {
         path.add( goal );
         boolean completePath = false;
 
-        while( cameFrom.containsKey( start )){
+        while ( cameFrom.containsKey( start ) ) {
             temp = cameFrom.get( temp );
 
-            if( temp == null)
+            if ( temp == null )
                 break;
 
-            if( temp.equals( start )) {
+            if ( temp.equals( start ) ) {
                 completePath = true;
                 break;
-            }
-            else
+            } else
                 path.add( temp );
         }
 
-        if( !completePath)
+        if ( !completePath )
             path.clear();
     }
 
     /**
      * Calculate a Heuristic cost for the distance between two tiles.
+     *
      * @param a Tile A
      * @param b Tile B
-     * @return  Heuristic coast of the movement
+     * @return Heuristic coast of the movement
      */
     public static double Heuristic( MapTile a, MapTile b ) {
         double cost = Math.abs( a.getWorldPosition().x - b.getWorldPosition().x ) + Math.abs( a.getWorldPosition().y - b.getWorldPosition().y );
 
-        if( a.getMapX() != b.getMapX() && a.getMapY() != b.getMapY())
+        if ( a.getMapX() != b.getMapX() && a.getMapY() != b.getMapY() )
             cost += 0.001;
 
         return cost;

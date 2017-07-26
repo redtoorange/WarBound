@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public class AssetController {
+public class AssetController{
     private AssetManager manager;
 
     public AssetController(){

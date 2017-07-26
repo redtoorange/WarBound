@@ -1,6 +1,6 @@
 package com.redtoorange.warbound.controllers;
 
-import com.redtoorange.warbound.Resource;
+import com.redtoorange.warbound.utilities.Resource;
 
 /**
  * ResourceController.java - Description
@@ -8,9 +8,7 @@ import com.redtoorange.warbound.Resource;
  * @author Andrew McGuiness
  * @version 7/19/2017
  */
-public class ResourceController {
-    private PlayerController owner;
-
+public class ResourceController extends Controller{
     private int gold;
     private int wood;
     private int oil;
@@ -18,7 +16,7 @@ public class ResourceController {
     private int availableFood;
 
     public ResourceController( PlayerController owner, int gold, int wood, int oil, int usedFood, int availableFood ) {
-        this.owner = owner;
+        super(owner);
 
         this.gold = gold;
         this.wood = wood;

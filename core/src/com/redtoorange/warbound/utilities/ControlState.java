@@ -1,4 +1,4 @@
-package com.redtoorange.warbound;
+package com.redtoorange.warbound.utilities;
 
 /**
  * ControlState.java - Description

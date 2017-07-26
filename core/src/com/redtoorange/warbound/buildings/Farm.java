@@ -2,7 +2,7 @@ package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.Resource;
+import com.redtoorange.warbound.utilities.Resource;
 
 /**
  * Barracks.java - Description
@@ -11,26 +11,24 @@ import com.redtoorange.warbound.Resource;
  * @version 7/19/2017
  */
 public class Farm extends Building {
-    private int productionAmount = 10;
+    public static final String TAG = Farm.class.getSimpleName();
 
-    private static TextureRegion[] regions = {
+    protected static TextureRegion[] regions = {
             new TextureRegion( new Texture( "wc2_buildings/small_building_started.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/farm_building.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/farm.png" ) ),
     };
 
+    protected int foodToAdd = 10;
+
     public Farm( String name, int width, int height, BuildingController controller ) {
         super( name, regions, width, height, controller );
+        TYPE = BuildingType.FARM;
     }
 
     @Override
     protected void finishConstruction() {
         super.finishConstruction();
-        owner.getResourceController().changeResource( Resource.FOOD_STORED, productionAmount );
-    }
-
-    @Override
-    public BuildingType getType() {
-        return BuildingType.FARM;
+        owner.getResourceController().changeResource( Resource.FOOD_STORED, foodToAdd );
     }
 }

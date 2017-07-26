@@ -16,7 +16,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kotcrab.vis.ui.VisUI;
-import com.redtoorange.warbound.Resource;
+import com.redtoorange.warbound.utilities.Resource;
+import com.redtoorange.warbound.controllers.Controller;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.controllers.ResourceController;
 
@@ -26,63 +27,57 @@ import com.redtoorange.warbound.controllers.ResourceController;
  * @author Andrew McGuiness
  * @version 7/19/2017
  */
-public class UIController {
-//    private ImageButton.ImageButtonStyle genericStyle;
-    private PlayerController owner;
+public class UIController extends Controller {
     private ResourceController resourceController;
 
     private OrthographicCamera guiCamera;
     private Viewport viewport;
+
     private Stage guiStage;
-    private Table rootTable;
     private Skin guiSkin;
 
-    private Label goldLabel;
-    private Label woodLabel;
-    private Label oilLabel;
-    private Label usedFoodLabel;
-    private Label availableFoodLabel;
+    private Label goldLabel, woodLabel, oilLabel, usedFoodLabel, availableFoodLabel;
+    private Table rootTable, controlPanel, buildingPanel;
 
-    private Table controlPanel;
-    private Table buildingPanel;
     private ControlButton[] buttonGrid;
 
     public UIController( PlayerController owner, InputMultiplexer multiplexer ) {
-        this.owner = owner;
-
-        buttonGrid = new ControlButton[9];
-
-        guiCamera = new OrthographicCamera( Gdx.graphics.getWidth(), Gdx.graphics.getHeight() );
-        viewport = new ScreenViewport( guiCamera );
+        super( owner );
 
         VisUI.load();
         guiSkin = VisUI.getSkin();
 
-//        genericStyle = new ImageButton.ImageButtonStyle( new ImageButton( guiSkin ).getStyle() );
+        guiCamera = new OrthographicCamera( Gdx.graphics.getWidth(), Gdx.graphics.getHeight() );
+        viewport = new ScreenViewport( guiCamera );
 
         guiStage = new Stage( viewport );
-        rootTable = new Table( guiSkin );
-        guiStage.addActor( rootTable );
 
-        rootTable.setFillParent( true );
-        rootTable.setDebug( true );
+        initRootTable();
 
-        rootTable.center();
-
-
-        Pixmap pix = new Pixmap( 1, 1, Pixmap.Format.RGB888 );
-        pix.setColor( Color.BLACK );
-        pix.fill();
-
-        TextureRegionDrawable tex = new TextureRegionDrawable( new TextureRegion( new Texture( pix ) ) );
-
+        TextureRegionDrawable tex = getBlackPixel();
         initControlPanel( tex );
         initResourcePanel( tex );
 
         multiplexer.addProcessor( guiStage );
     }
 
+    /** Create a black 1 pixel texture to fill the tables with a black background */
+    private TextureRegionDrawable getBlackPixel() {
+        Pixmap pix = new Pixmap( 1, 1, Pixmap.Format.RGB888 );
+        pix.setColor( Color.BLACK );
+        pix.fill();
 
+        return new TextureRegionDrawable( new TextureRegion( new Texture( pix ) ) );
+    }
+
+    private void initRootTable() {
+        rootTable = new Table( guiSkin );
+        guiStage.addActor( rootTable );
+
+        rootTable.setFillParent( true );
+        rootTable.setDebug( true );
+        rootTable.center();
+    }
 
     private void initControlPanel( TextureRegionDrawable tex ) {
         //Control Panel is three stacked tables, each 33% of the panel height
@@ -93,7 +88,7 @@ public class UIController {
         rootTable.add( controlPanel )
                 .left()
                 .width( Value.percentWidth( 0.15f, rootTable ) )
-                .height( Value.percentHeight( 1, rootTable )  );
+                .height( Value.percentHeight( 1, rootTable ) );
 
 
         Table minimapPanel = new Table( guiSkin );
@@ -119,32 +114,6 @@ public class UIController {
                 .height( Value.percentHeight( 0.33f, controlPanel ) );
         createBuildingPanel();
     }
-
-    private void createBuildingPanel() {
-        buildingPanel.clearChildren();
-
-        for( int i = 0; i < buttonGrid.length; i++){
-            if( i > 0 && i % 3 == 0)
-                buildingPanel.row();
-
-            buttonGrid[i] = createButton( buildingPanel );
-        }
-    }
-
-    private ControlButton createButton( Table parentTable ){
-        ControlButton button = new ControlButton( guiSkin );
-
-        parentTable.add( button )
-                .width( Value.percentWidth( 1.0f/3.0f, parentTable )  )
-                .height( Value.percentHeight( 1.0f/3.0f, parentTable ) );
-
-        return button;
-    }
-
-    public void changeControlState( ControlButtonState.ButtonLayout layout){
-        ControlButtonState.setLayout( layout, this );
-    }
-
 
     private void initResourcePanel( TextureRegionDrawable tex ) {
         Table resources = new Table( guiSkin );
@@ -187,38 +156,57 @@ public class UIController {
         resources.add( availableFoodLabel );
     }
 
-    public void update( float deltaTime ){
-        updateResources();
-        guiStage.act(deltaTime);
+    private void createBuildingPanel() {
+        buildingPanel.clearChildren();
+
+        buttonGrid = new ControlButton[9];
+
+        for ( int i = 0; i < buttonGrid.length; i++ ) {
+            if ( i > 0 && i % 3 == 0 )
+                buildingPanel.row();
+
+            buttonGrid[i] = createButton( buildingPanel );
+        }
     }
 
-    public void draw( ){
+    private ControlButton createButton( Table parentTable ) {
+        ControlButton button = new ControlButton( guiSkin );
+
+        parentTable.add( button )
+                .width( Value.percentWidth( 1.0f / 3.0f, parentTable ) )
+                .height( Value.percentHeight( 1.0f / 3.0f, parentTable ) );
+
+        return button;
+    }
+
+    public void update( float deltaTime ) {
+        updateResourceLabels();
+        guiStage.act( deltaTime );
+    }
+
+    public void draw() {
         guiCamera.update();
         guiStage.draw();
     }
 
-    private void updateResources(){
-        if( resourceController == null )
+    public void resize( int width, int height ) {
+        guiStage.getViewport().update( width, height, true );
+    }
+
+    private void updateResourceLabels() {
+        if ( resourceController == null )
             resourceController = owner.getResourceController();
 
         goldLabel.setText( "" + resourceController.getResource( Resource.GOLD ) );
         woodLabel.setText( "" + resourceController.getResource( Resource.WOOD ) );
         oilLabel.setText( "" + resourceController.getResource( Resource.OIL ) );
 
-        usedFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_USED) );
-        availableFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_STORED) );
+        usedFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_USED ) );
+        availableFoodLabel.setText( "" + resourceController.getResource( Resource.FOOD_STORED ) );
     }
 
-    public PlayerController getOwner() {
-        return owner;
-    }
-
-    public void resize( int width, int height ) {
-        guiStage.getViewport().update( width, height, true);
-    }
-
-    public void swapControls(){
-
+    public void changeControlState( ButtonLayout layout ) {
+        ControlButtonState.setLayout( layout, this );
     }
 
     public ControlButton[] getButtonGrid() {

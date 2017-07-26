@@ -1,4 +1,4 @@
-package com.redtoorange.warbound.ai;
+package com.redtoorange.warbound.units.ai;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -6,15 +6,17 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.units.Unit;
+import com.redtoorange.warbound.utilities.AStarSearch;
+import com.redtoorange.warbound.utilities.Facing;
 
 /**
- * MovementController.java - Description
+ * MovementComponent.java - Description
  *
  * @author Andrew McGuiness
  * @version 7/20/2017
  */
-public class MovementController {
-    public static final String TAG = MovementController.class.getSimpleName();
+public class MovementComponent {
+    public static final String TAG = MovementComponent.class.getSimpleName();
     private static final float SQRT_2 = 1.4f;
 
     public Facing unitFacing = Facing.SOUTH;
@@ -35,7 +37,7 @@ public class MovementController {
     private MapTile nextTile;
     private MapTile prevTile;
 
-    public MovementController( Unit owner ){
+    public MovementComponent( Unit owner ){
         this.owner = owner;
         this.state = MoveState.IDLE;
     }

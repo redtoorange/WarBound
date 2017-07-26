@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.utilities.Constants;
 
 /**
  * CameraController.java - Description
@@ -15,9 +15,7 @@ import com.redtoorange.warbound.Constants;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public class CameraController {
-
-    private PlayerController owner;
+public class CameraController extends Controller{
     private OrthographicCamera camera;
     private Viewport viewport;
 
@@ -35,7 +33,7 @@ public class CameraController {
     }
 
     public CameraController( PlayerController owner, float startX, float startY){
-        this.owner = owner;
+        super(owner);
         camera = new OrthographicCamera( );
         camera.position.set( startX, startY, 0 );
 

@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.GameObject;
 
 /**
@@ -91,10 +91,7 @@ public class MapTile {
     }
 
     public boolean isOccupied() {
-        if ( occupier == null )
-            return false;
-
-        return true;
+        return occupier != null;
     }
 
     /**

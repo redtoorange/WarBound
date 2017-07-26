@@ -6,9 +6,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
-import com.redtoorange.warbound.ai.Facing;
-import com.redtoorange.warbound.ai.MovementController;
-import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.units.ai.MovementComponent;
+import com.redtoorange.warbound.utilities.Facing;
+import com.redtoorange.warbound.units.ai.UnitOrder;
 import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapTile;
@@ -19,7 +19,7 @@ import com.redtoorange.warbound.map.MapTile;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public abstract class Unit implements GameObject {
+public abstract class Unit extends GameObject {
     public static String TAG = Unit.class.getSimpleName();
 
     protected Facing currentFacing = Facing.SOUTH;
@@ -30,7 +30,7 @@ public abstract class Unit implements GameObject {
 
     protected float speed = 2.5f;
 
-    protected MovementController movementController;
+    protected MovementComponent movementComponent;
 
     protected MapTile currentTile = null;
     protected Sprite sprite;
@@ -39,11 +39,13 @@ public abstract class Unit implements GameObject {
     protected Building targetBuilding;
 
     public Unit( MapTile startTile, TextureRegion texture, UnitController controller){
+        super( controller );
+
         sprite = new Sprite( texture );
         sprite.setSize( 1, 1 );
         sprite.setPosition( startTile.getWorldPosition().x, startTile.getWorldPosition().y );
 
-        movementController = new MovementController( this );
+        movementComponent = new MovementComponent( this );
 
         setCurrentTile( startTile );
         this.controller = controller;
@@ -56,8 +58,8 @@ public abstract class Unit implements GameObject {
             case IDLE:
                 break;
             case MOVE:
-                movementController.execute( deltaTime );
-                if( movementController.isIdle())
+                movementComponent.execute( deltaTime );
+                if( movementComponent.isIdle())
                     currentOrder = UnitOrder.IDLE;
                 break;
         }
@@ -83,7 +85,7 @@ public abstract class Unit implements GameObject {
      */
     public void giveMoveOrder( MapTile destination ){
         currentOrder = UnitOrder.MOVE;
-        movementController.setDestination( destination );
+        movementComponent.setDestination( destination );
     }
 
     public void giveAttackOrder( GameObject target ){
@@ -121,8 +123,8 @@ public abstract class Unit implements GameObject {
             currentTile.setOccupier( this );
     }
 
-    public MovementController getMovementController() {
-        return movementController;
+    public MovementComponent getMovementComponent() {
+        return movementComponent;
     }
 
     public UnitOrder getCurrentOrder() {

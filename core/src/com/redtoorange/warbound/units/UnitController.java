@@ -7,11 +7,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.controllers.CameraController;
+import com.redtoorange.warbound.controllers.Controller;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapTile;
-import com.redtoorange.warbound.ui.ControlButtonState;
+import com.redtoorange.warbound.ui.ButtonLayout;
 
 /**
  * UnitController.java - Handle AI for all units.
@@ -19,10 +20,8 @@ import com.redtoorange.warbound.ui.ControlButtonState;
  * @author Andrew McGuiness
  * @version 6/22/2017
  */
-public class UnitController {
+public class UnitController extends Controller{
     public static String TAG = UnitController.class.getSimpleName();
-
-    private PlayerController owner;
 
     private Array< Unit > units;
     private Array< Unit > selectedUnits;
@@ -32,7 +31,7 @@ public class UnitController {
     private CameraController cameraController;
 
     public UnitController( PlayerController owner ) {
-        this.owner = owner;
+        super(owner);
 
         units = new Array< Unit >();
         selectedUnits = new Array< Unit >();
@@ -84,7 +83,7 @@ public class UnitController {
         boolean anythingSelected = ( selectedUnits.size > 0 );
 
         if ( anythingSelected ) {
-            owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.PEON );
+            owner.getUiController().changeControlState( ButtonLayout.PEON );
         }
 
         return anythingSelected;
@@ -95,7 +94,7 @@ public class UnitController {
             u.select( false );
 
         selectedUnits.clear();
-        owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.DEFAULT );
+        owner.getUiController().changeControlState( ButtonLayout.DEFAULT );
 
     }
 
@@ -119,7 +118,7 @@ public class UnitController {
 
             shapeRenderer.rect( box.x, box.y, box.width, box.height );
             if ( Constants.DEBUGGING )
-                u.getMovementController().debuggingInfo();
+                u.getMovementComponent().debuggingInfo();
         }
 
         shapeRenderer.end();
@@ -133,8 +132,8 @@ public class UnitController {
         shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
         shapeRenderer.setColor( Color.BLUE );
         for ( Unit u : units ) {
-            if ( !u.getMovementController().isIdle() ) {
-                Array< MapTile > path = u.getMovementController().getPath();
+            if ( !u.getMovementComponent().isIdle() ) {
+                Array< MapTile > path = u.getMovementComponent().getPath();
                 if ( path != null && path.size > 0 ) {
 
                     for ( int i = 0; i < path.size - 1; i++ ) {

@@ -1,4 +1,4 @@
-package com.redtoorange.warbound.ai;
+package com.redtoorange.warbound.map;
 
 /**
  * WeightedGraph.java - Description

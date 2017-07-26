@@ -7,13 +7,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.Constants;
-import com.redtoorange.warbound.ControlState;
+import com.redtoorange.warbound.utilities.Constants;
+import com.redtoorange.warbound.utilities.ControlState;
 import com.redtoorange.warbound.controllers.CameraController;
+import com.redtoorange.warbound.controllers.Controller;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
-import com.redtoorange.warbound.ui.ControlButtonState;
+import com.redtoorange.warbound.ui.ButtonLayout;
 import com.redtoorange.warbound.units.Peon;
 import com.redtoorange.warbound.units.UnitController;
 
@@ -23,64 +24,53 @@ import com.redtoorange.warbound.units.UnitController;
  * @author Andrew McGuiness
  * @version 7/18/2017
  */
-public class BuildingController {
-    private PlayerController owner;
+public class BuildingController extends Controller{
+    boolean initialized = false;
     private ShapeRenderer shapeRenderer;
-    private Array<Building> buildings;
-
+    private Array< Building > buildings;
     private boolean placingBuilding;
     private Building currentBuilding;
-
-    boolean initialized = false;
     private MapController mapController;
     private CameraController cameraController;
 
-    public BuildingController( PlayerController owner ){
-        this.owner = owner;
-        buildings = new Array< Building >(  );
-        shapeRenderer = new ShapeRenderer(  );
+    public BuildingController( PlayerController owner ) {
+        super(owner);
+        buildings = new Array< Building >();
+        shapeRenderer = new ShapeRenderer();
     }
 
-    public void beginPlacing( BuildingType b){
-        if( placingBuilding )
+    public void attemptToBeginPlacing( BuildingType buildingType ) {
+        if ( placingBuilding )
             cancelPlacing();
 
-        if( checkResources( b ) ){
-            //charge resource
-            owner.setControlState( ControlState.PLACING_BUILDING );
-            currentBuilding = instanceBuilding( b );
-            placingBuilding = true;
-        }
+        if ( checkResources( buildingType ) )
+            beginPlacing( buildingType );
     }
 
-    private Building instanceBuilding(BuildingType type){
-        Building b = null;
+    private void beginPlacing( BuildingType buildingType ) {
+        //charge resource
+        owner.setControlState( ControlState.PLACING_BUILDING );
+        currentBuilding = instanceBuilding( buildingType );
+        placingBuilding = ( currentBuilding != null );
+    }
 
+    private Building instanceBuilding( BuildingType buildingType ) {
         owner.getResourceController().chargeAmount(
-                type.goldCost, type.woodCost,
-                type.oilCost, type.foodCost
+                buildingType.goldCost, buildingType.woodCost,
+                buildingType.oilCost, buildingType.foodCost
         );
 
-        switch ( type ){
-            case BARRACKS:
-                b = BuildingFactory.BuildBarracks( this );
-                break;
-            case FARM:
-                b = BuildingFactory.BuildFarm(this);
-                break;
-        }
-
-        return b;
+        return BuildingFactory.CreateBuildingInstance( buildingType, this );
     }
 
-    private boolean checkResources(BuildingType b){
+    private boolean checkResources( BuildingType b ) {
         return owner.getResourceController().canAfford(
                 b.goldCost, b.woodCost,
                 b.oilCost, b.foodCost
         );
     }
 
-    public void cancelPlacing(){
+    public void cancelPlacing() {
 
         refundCurrentBuilding();
 
@@ -97,50 +87,50 @@ public class BuildingController {
         );
     }
 
-    public void addBuilding( Building b){
-        if( !buildings.contains( b, true ))
+    public void addBuilding( Building b ) {
+        if ( !buildings.contains( b, true ) )
             buildings.add( b );
     }
 
-    public void removeBuilding( Building b){
+    public void removeBuilding( Building b ) {
         buildings.removeValue( b, true );
     }
 
-    private void initialize(){
+    private void initialize() {
         initialized = true;
 
         mapController = owner.getMapController();
         cameraController = owner.getCameraController();
     }
 
-    public void update( float deltaTime ){
-        if( !initialized )
+    public void update( float deltaTime ) {
+        if ( !initialized )
             initialize();
 
-        for( Building b : buildings )
+        for ( Building b : buildings )
             b.update( deltaTime );
 
         //We are placing a building
-        if( placingBuilding && currentBuilding != null){
+        if ( placingBuilding && currentBuilding != null ) {
             //Find the hovered tile
             MapTile currentTile = mapController.getTileByWorldPos(
                     cameraController.getMouseWorldPosition()
             );
 
             //Hand the tile to the building for positioning
-            if( currentTile != null)
+            if ( currentTile != null )
                 currentBuilding.setPosition( currentTile );
         }
 
-        if( !placingBuilding && currentBuilding != null && !currentBuilding.isComplete() ){
-            if( Gdx.input.isKeyJustPressed( Input.Keys.N )) {
+        if ( !placingBuilding && currentBuilding != null && !currentBuilding.isComplete() ) {
+            if ( Gdx.input.isKeyJustPressed( Input.Keys.N ) ) {
                 cancelCurrentConstruction();
             }
         }
     }
 
-    public void cancelCurrentConstruction(){
-        if( currentBuilding != null){
+    public void cancelCurrentConstruction() {
+        if ( currentBuilding != null ) {
 
             refundCurrentBuilding();
 
@@ -155,19 +145,19 @@ public class BuildingController {
         for ( Building b : buildings )
             b.draw( batch );
 
-        if( placingBuilding && currentBuilding != null)
+        if ( placingBuilding && currentBuilding != null )
             currentBuilding.draw( batch );
     }
 
-    public boolean placeBuilding(){
+    public boolean placeBuilding() {
         boolean placed = currentBuilding.placeBuilding();
 
-        if( placed ){
+        if ( placed ) {
             UnitController uc = owner.getUnitController();
             Peon p = uc.getFirstSelectedPeon();
             MapTile t = currentBuilding.getCentralTile();
 
-            if( p != null && t != null){
+            if ( p != null && t != null ) {
                 p.giveMoveOrder( t );
             }
 
@@ -179,59 +169,63 @@ public class BuildingController {
         return placed;
     }
 
-
-    public boolean selectBuilding( Vector2 start, Vector2 end){
+    public boolean selectBuilding( Vector2 start, Vector2 end ) {
         float x = Math.min( start.x, end.x );
         float y = Math.min( start.y, end.y );
 
         float width = Math.max( start.x, end.x ) - x;
         float height = Math.max( start.y, end.y ) - y;
 
-        Rectangle selectionRect = new Rectangle( x, y, width, height);
+        Rectangle selectionRect = new Rectangle( x, y, width, height );
 
 
-        for( Building b : buildings){
-            if( selectionRect.overlaps( b.getBoundingBox() ) )
+        for ( Building b : buildings )
+            if ( selectionRect.overlaps( b.getBoundingBox() ) )
                 currentBuilding = b;
-        }
 
         boolean anythingSelected = currentBuilding != null;
 
-        if( anythingSelected ){
+        if ( anythingSelected )
             updateUI();
-
-        }
 
         return anythingSelected;
     }
 
     public void updateUI() {
-        if(currentBuilding != null){
-            if( !currentBuilding.isComplete() ){
-                owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.CONSTRUCTION );
+        if ( currentBuilding != null ) {
+            if ( !currentBuilding.isComplete() ) {
+                owner.getUiController().changeControlState( ButtonLayout.CONSTRUCTION );
+            } else {
+                switch ( currentBuilding.getType() ) {
+                    case BARRACKS:
+                        owner.getUiController().changeControlState( ButtonLayout.BARRACKS );
+                        break;
+
+                    case FARM:
+                    case NONE:
+                        owner.getUiController().changeControlState( ButtonLayout.DEFAULT );
+                        break;
+                }
             }
-            else if( currentBuilding instanceof Barracks ){
-                owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.BARRACKS );
-            }
+        } else {
+            owner.getUiController().changeControlState( ButtonLayout.DEFAULT );
         }
     }
 
-
-    public void deselectBuilding(){
+    public void deselectBuilding() {
         currentBuilding = null;
-        owner.getUiController().changeControlState( ControlButtonState.ButtonLayout.DEFAULT );
+        updateUI();
     }
 
-
-    public void renderSelected( ) {
-        if( currentBuilding != null ){
+    public void renderSelected() {
+        if ( currentBuilding != null ) {
             Gdx.gl.glLineWidth( 3f );
             shapeRenderer.setProjectionMatrix( cameraController.combinedMatrix() );
             shapeRenderer.begin( ShapeRenderer.ShapeType.Line );
-            shapeRenderer.setColor( Constants.SELECTION_COLOR  );
+            shapeRenderer.setColor( Constants.SELECTION_COLOR );
 
             Rectangle box = currentBuilding.getBoundingBox();
-            shapeRenderer.rect(box.x, box.y, box.width, box.height );
+            shapeRenderer.rect( box.x, box.y, box.width, box.height );
 
             shapeRenderer.end();
         }

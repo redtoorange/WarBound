@@ -4,8 +4,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.Constants;
-import com.redtoorange.warbound.ai.UnitOrder;
+import com.redtoorange.warbound.utilities.Constants;
+import com.redtoorange.warbound.units.ai.UnitOrder;
 import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.map.MapTile;
 
@@ -17,18 +17,13 @@ import com.redtoorange.warbound.map.MapTile;
  */
 public class Peon extends Unit {
     public static final String TAG = Peon.class.getSimpleName();
-
+    private static final int NORTH = 0, N_EAST = 1, EAST = 2, S_EAST = 3, SOUTH = 4;
+    float timer = 1.0f;
     private float animationTime = 0.0f;
     private Animation currentAnimation;
-
     private Animation[] animations;
     private TextureAtlas textureAtlas;
     private boolean flipped = false;
-
-
-
-
-    private static final int NORTH = 0, N_EAST = 1, EAST = 2, S_EAST = 3, SOUTH = 4;
 
     public Peon( MapTile startTile, TextureRegion texture, UnitController controller ) {
         super( startTile, texture, controller );
@@ -49,7 +44,7 @@ public class Peon extends Unit {
     protected void updateSpriteFacing() {
         flipped = false;
 //        switch ( currentFacing ) {
-        switch ( movementController.unitFacing ) {
+        switch ( movementComponent.unitFacing ) {
                 case NORTH:
                     currentAnimation = animations[NORTH];
                     break;
@@ -98,8 +93,6 @@ public class Peon extends Unit {
         }
     }
 
-    float timer = 1.0f;
-
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
@@ -112,8 +105,8 @@ public class Peon extends Unit {
 
         switch ( currentOrder ){
             case ENTER_BUILDING:
-                movementController.execute( deltaTime );
-                if( movementController.isIdle())
+                movementComponent.execute( deltaTime );
+                if( movementComponent.isIdle())
                     enterBuilding();
 
                 break;
@@ -137,7 +130,7 @@ public class Peon extends Unit {
         boolean shouldEnter = false;
 
         //  The building's construction is halted
-        if( targetBuilding.inReadyForConstruction() ){
+        if( targetBuilding.isReadyForConstruction() ){
             System.out.println( "**Constructing building**" );
             currentOrder = UnitOrder.CONSTRUCT_BUILDING;
             targetBuilding.beginConstruction( this );
@@ -182,7 +175,7 @@ public class Peon extends Unit {
         targetBuilding = building;
 
         currentOrder = UnitOrder.ENTER_BUILDING;
-        movementController.setDestination( destination );
+        movementComponent.setDestination( destination );
     }
 
     @Override

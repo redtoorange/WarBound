@@ -4,8 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.redtoorange.warbound.Constants;
-import com.redtoorange.warbound.ControlState;
+import com.redtoorange.warbound.utilities.Constants;
+import com.redtoorange.warbound.utilities.ControlState;
 import com.redtoorange.warbound.buildings.BuildingController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
@@ -51,7 +51,7 @@ public class PlayerController implements ClickListener {
         cameraController = new CameraController( this, 25, 25 );
         buildingController = new BuildingController( this );
         unitController = new UnitController( this );
-        resourceController = new ResourceController( this, 1000, 0, 0, 4, 10 );
+        resourceController = new ResourceController( this, 1000, 500, 0, 4, 10 );
 
         inputMultiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor( inputMultiplexer );

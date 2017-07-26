@@ -6,8 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.PerlinNoiseGenerator;
-import com.redtoorange.warbound.ai.WeightedGraph;
+import com.redtoorange.warbound.utilities.PerlinNoiseGenerator;
 
 /**
  * MapController.java - Description

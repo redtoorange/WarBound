@@ -3,7 +3,7 @@ package com.redtoorange.warbound.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
-import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 
@@ -59,8 +59,6 @@ public class PlayScreen extends ScreenAdapter {
         playerController.draw();
     }
 
-
-
     /**
      *
      * @param width
@@ -79,11 +77,4 @@ public class PlayScreen extends ScreenAdapter {
     public void show() {
         super.show();
     }
-
-
-
-
-
-
-
 }

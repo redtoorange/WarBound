@@ -2,7 +2,7 @@ package com.redtoorange.warbound.controllers;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.redtoorange.warbound.Constants;
+import com.redtoorange.warbound.utilities.Constants;
 
 /**
  * SelectionController.java - Description
@@ -10,8 +10,7 @@ import com.redtoorange.warbound.Constants;
  * @author Andrew McGuiness
  * @version 7/19/2017
  */
-public class SelectionController {
-    private PlayerController owner;
+public class SelectionController extends Controller{
     private CameraController cameraController;
 
     private ShapeRenderer shapeRenderer;
@@ -22,7 +21,7 @@ public class SelectionController {
 
 
     public SelectionController( PlayerController owner ){
-        this.owner = owner;
+        super(owner);
         shapeRenderer = new ShapeRenderer(  );
     }
 

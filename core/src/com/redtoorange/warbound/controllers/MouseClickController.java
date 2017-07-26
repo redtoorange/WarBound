@@ -9,13 +9,12 @@ import com.badlogic.gdx.utils.Array;
  * @author Andrew McGuiness
  * @version 6/21/2017
  */
-public class MouseClickController implements InputProcessor {
-    private PlayerController owner;
+public class MouseClickController extends Controller implements InputProcessor {
     private Array<ClickListener> listeners;
 
 
     public MouseClickController( PlayerController owner ){
-        this.owner = owner;
+        super(owner);
         listeners = new Array< ClickListener >(  );
 
         addListener( owner );
