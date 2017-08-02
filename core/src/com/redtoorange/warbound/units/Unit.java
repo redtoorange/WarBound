@@ -5,14 +5,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.StringBuilder;
 import com.redtoorange.warbound.GameObject;
-import com.redtoorange.warbound.units.ai.MovementComponent;
-import com.redtoorange.warbound.utilities.Facing;
-import com.redtoorange.warbound.units.ai.UnitOrder;
 import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.tools.UnitTable;
+import com.redtoorange.warbound.units.ai.MovementComponent;
+import com.redtoorange.warbound.units.ai.UnitOrder;
+import com.redtoorange.warbound.utilities.Facing;
 
 /**
  * Unit.java - Description
@@ -105,6 +105,10 @@ public abstract class Unit extends GameObject {
         return speed;
     }
 
+    public void setSpeed( float speed ) {
+        this.speed = speed;
+    }
+
     public Vector2 getPosition(){
         return new Vector2( sprite.getX(), sprite.getY() );
     }
@@ -145,41 +149,46 @@ public abstract class Unit extends GameObject {
         return !insideBuilding;
     }
 
-    public String getDebugLog(){
-        StringBuilder builder = new StringBuilder(  );
+    private UnitTable debugTable;
 
-        builder.append( "Current Facing: \t" );
-        builder.append( currentFacing );
+    private void initDebugTable(){
+        debugTable = new UnitTable( this );
+    }
 
-        builder.append( "\nCurrent Order: \t" );
-        builder.append( currentOrder );
+    public UnitTable getDebugTable(){
+        if( debugTable == null)
+            initDebugTable();
 
-        builder.append( "\nSpeed: " );
-        builder.append( speed );
+        return debugTable;
+    }
 
-        builder.append( "\nCurrent Tile: \t" );
-        builder.append( currentTile );
+    public static String getTAG() {
+        return TAG;
+    }
 
-        if( currentTile != null){
-            builder.append( "\nTile Position: " );
-            builder.append( currentTile.getMapX() + ", " + currentTile.getMapY() );
-        }
+    public Facing getCurrentFacing() {
+        return currentFacing;
+    }
 
-        builder.append( "\nWorld Position: " );
-        builder.append( sprite.getX() + ", " + sprite.getX() );
+    @Override
+    public UnitController getController() {
+        return controller;
+    }
 
-        builder.append( "\nSelected: " );
-        builder.append( selected );
+    @Override
+    public PlayerController getOwner() {
+        return owner;
+    }
 
-        builder.append( "\nInside a Building: " );
-        builder.append( insideBuilding );
+    public Sprite getSprite() {
+        return sprite;
+    }
 
-        if( targetBuilding != null) {
-            builder.append( "\nTarget Building: \t" );
-            builder.append( targetBuilding );
-        }
+    public boolean isSelected() {
+        return selected;
+    }
 
-        builder.append( "\n" );
-        return builder.toString();
+    public Building getTargetBuilding() {
+        return targetBuilding;
     }
 }

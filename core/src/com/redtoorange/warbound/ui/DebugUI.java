@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -20,8 +22,10 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.kotcrab.vis.ui.VisUI;
 import com.kotcrab.vis.ui.widget.VisCheckBox;
 import com.kotcrab.vis.ui.widget.VisLabel;
+import com.kotcrab.vis.ui.widget.VisTable;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
+import com.redtoorange.warbound.tools.DebugTable;
 import com.redtoorange.warbound.units.Unit;
 
 /**
@@ -47,7 +51,7 @@ public class DebugUI {
 
     private boolean unitPaths = false;
 
-    private VisLabel debugTextArea;
+    private VisTable debugTable;
 
     private TextureRegionDrawable getBlackPixel() {
         Pixmap pix = new Pixmap( 1, 1, Pixmap.Format.RGB888 );
@@ -69,7 +73,7 @@ public class DebugUI {
         viewport = new ScreenViewport( guiCamera );
 
         guiStage = new Stage( viewport );
-        this.playerController.getInputMultiplexer().addProcessor( guiStage );
+        this.playerController.getInputMultiplexer().addProcessor( 0, guiStage );
 
         initRootTable();
     }
@@ -87,6 +91,14 @@ public class DebugUI {
         debugContrainer.setBackground( pixel );
         rootTable.add( debugContrainer );
 
+        debugContrainer.addCaptureListener( new EventListener() {
+            @Override
+            public boolean handle( Event event ) {
+                //Capture mouse input and shit
+                return false;
+            }
+        } );
+
         debugContrainer.setDebug( true );
         debugContrainer.add( new VisLabel("Hello Debug!")  ).align( Align.center ).size( 360, 50  );
         debugContrainer.row();
@@ -99,29 +111,18 @@ public class DebugUI {
         } );
         debugContrainer.add(  checkBox ).center();
 
-        debugTextArea = new VisLabel(
-                "ScrollPane (code) scrolls a child widget using \n" +
-                        "scrollbars and/or mouse or touch dragging. Scrolling is\n" +
-                        " automatically enabled when the widget is larger than \n" +
-                        "the scroll pane. If the widget is smaller than the scroll pa\n" +
-                        "ne in one direction, it is sized to the scroll pane in that dir\n" +
-                        "ection. ScrollPane has many settings for if and how touches cont\n" +
-                        "rol scrolling, fading scrollbars, etc. ScrollPane has dra\n" +
-                        "wables for the background, horizontal scrollbar and knob, \n" +
-                        "and vertical scrollbar and knob. If touches are enabled (the \n" +
-                        "default), all the drawables are optional.\n" +
-                        "The ScrollPane preferred width"
-        );
+        debugTable = new VisTable(  );
+        debugTable.top().left();
 
-        debugTextArea.setWrap( true );
-
-        ScrollPane scrollPane = new ScrollPane( debugTextArea, guiSkin );
+        ScrollPane scrollPane = new ScrollPane( debugTable);
         scrollPane.setScrollbarsOnTop( true );
         scrollPane.setScrollBarPositions( false, true );
 
         debugContrainer.row();
-        debugContrainer.add( scrollPane ).height( 360 ).fill();
+        debugContrainer.add( scrollPane ).height( 360 ).expand().fill();
     }
+
+    private DebugTable currentDebugTable = null;
 
     public void update( float deltaTime ) {
         if( Gdx.input.isKeyJustPressed( Input.Keys.F1 ))
@@ -129,10 +130,20 @@ public class DebugUI {
 
         if( playerController.getUnitController().hasUnitsSelected()){
             Unit u = playerController.getUnitController().getFirstSelectedUnit();
-            debugTextArea.setText( u.getDebugLog() );
+            DebugTable debugTable = u.getDebugTable();
+            if( currentDebugTable != debugTable ){
+                this.debugTable.clear();
+                currentDebugTable = debugTable;
+                this.debugTable.add( currentDebugTable );
+            }
+
+            if( currentDebugTable != null )
+                currentDebugTable.updateUI();
+
         }
         else{
-            debugTextArea.setText( "" );
+            debugTable.clear();
+            currentDebugTable = null;
         }
 
         if( show )

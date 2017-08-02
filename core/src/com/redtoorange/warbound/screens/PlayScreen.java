@@ -49,7 +49,7 @@ public class PlayScreen extends ScreenAdapter {
         if( Gdx.input.isKeyJustPressed( Input.Keys.ESCAPE ) ) {
             Gdx.app.exit();
         }
-        if( Gdx.input.isKeyJustPressed( Input.Keys.D ) ) {
+        if( Gdx.input.isKeyJustPressed( Input.Keys.F2 ) ) {
             Constants.DEBUGGING = !Constants.DEBUGGING;
         }
 
