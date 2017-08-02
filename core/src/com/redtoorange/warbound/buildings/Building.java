@@ -7,10 +7,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.redtoorange.warbound.GameObject;
+import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
-import com.redtoorange.warbound.units.Unit;
+import com.redtoorange.warbound.units.Builder;
 
 /**
  * Building.java - Description
@@ -32,8 +33,8 @@ public abstract class Building extends GameObject {
     protected int width;
     protected int height;
     protected boolean validLocations;
-    protected BuildingState buildingState = BuildingState.PLACING;
-    protected Unit builder;
+    protected BuildingState currentState = BuildingState.PLACING;
+    protected Builder builder;
     protected float amountConstructed;
     protected float constructionTime;
     protected boolean canBeEntered = false;
@@ -58,9 +59,9 @@ public abstract class Building extends GameObject {
 
     @Override
     public void update( float deltaTime ) {
-        switch ( buildingState ) {
+        switch ( currentState ) {
             case BEING_CONSTRUCTED:
-                constructBuilding( deltaTime );
+                progressBuildingConstruction( deltaTime );
                 break;
         }
     }
@@ -136,7 +137,7 @@ public abstract class Building extends GameObject {
 
             sprite.setRegion( regions[STARTED] );
             sprite.setAlpha( 1.0f );
-            buildingState = BuildingState.CONSTRUCTION_HALTED;
+            currentState = BuildingState.CONSTRUCTION_HALTED;
 
             for ( int x = 0; x < width; x++ ) {
                 for ( int y = 0; y < height; y++ ) {
@@ -177,62 +178,72 @@ public abstract class Building extends GameObject {
         return currentTiles[width / 2][height / 2];
     }
 
-    protected void finishConstruction() {
-        System.out.println( TYPE + " complete!");
-        sprite.setRegion( regions[COMPLETE] );
-        buildingState = BuildingState.COMPLETE;
-        controller.updateUI();
+
+
+    /** Set the builder for the building and begin the construction. */
+    public void beginBuildingConstruction( Builder builder ) {
+        this.builder = builder;
+        currentState = BuildingState.BEING_CONSTRUCTED;
     }
 
-    public void constructBuilding( float amount ) {
+    /** Add to the building's overall progress. */
+    public void progressBuildingConstruction( float amount ) {
         if ( isCurrentlyBeingBuilt() ) {
             amountConstructed += amount;
-            if ( amountConstructed / constructionTime >= 0.5f ) {
+            if ( amountConstructed / constructionTime >= 0.5f )
                 sprite.setRegion( regions[PARTIAL] );
-            }
 
-            if ( amountConstructed >= constructionTime ) {
-                finishConstruction();
-            }
+            if ( amountConstructed >= constructionTime )
+                completeBuildingConstruction();
         }
     }
 
-    public void beginConstruction( Unit unit ) {
-        this.builder = unit;
-        buildingState = BuildingState.BEING_CONSTRUCTED;
+    /** The progress has reached 100% */
+    protected void completeBuildingConstruction() {
+        System.out.println( TYPE + " complete!");
+        sprite.setRegion( regions[COMPLETE] );
+        currentState = BuildingState.COMPLETE;
+
+        if( controller.getCurrentBuilding() == this)
+            controller.updateUI();
     }
+
 
     public void cancelConstruction() {
         System.out.println( "**Cancel this building**" );
+        currentState = BuildingState.CANCELLED;
 
         if ( builder != null )
             builder.ejectFromBuilding( getCentralTile() );
 
-        for ( int x = 0; x < width; x++ ) {
-            for ( int y = 0; y < height; y++ ) {
+        for ( int x = 0; x < width; x++ )
+            for ( int y = 0; y < height; y++ )
                 currentTiles[x][y].setOccupier( null );
-            }
-        }
     }
 
+    /** Select an empty spot along the perimeter of the Building. */
     public MapTile getSpotOnPerimeter() {
         return currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );
     }
 
     public boolean canBeEntered() {
-        return buildingState == BuildingState.COMPLETE && canBeEntered;
+        return currentState == BuildingState.COMPLETE && canBeEntered;
     }
 
     public boolean isReadyForConstruction() {
-        return buildingState == BuildingState.CONSTRUCTION_HALTED;
+        return currentState == BuildingState.CONSTRUCTION_HALTED;
     }
 
     public boolean isCurrentlyBeingBuilt() {
-        return buildingState == BuildingState.BEING_CONSTRUCTED;
+        return currentState == BuildingState.BEING_CONSTRUCTED;
     }
 
     public boolean isComplete() {
-        return buildingState == BuildingState.COMPLETE;
+        return currentState == BuildingState.COMPLETE;
+    }
+
+    public boolean isCancelled(){
+        return currentState == BuildingState.CANCELLED;
     }
 
     public BuildingType getType(){

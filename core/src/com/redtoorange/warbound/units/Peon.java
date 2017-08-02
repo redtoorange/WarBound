@@ -15,7 +15,7 @@ import com.redtoorange.warbound.map.MapTile;
  * @author Andrew McGuiness
  * @version 7/19/2017
  */
-public class Peon extends Unit {
+public class Peon extends Unit implements Builder {
     public static final String TAG = Peon.class.getSimpleName();
     private static final int NORTH = 0, N_EAST = 1, EAST = 2, S_EAST = 3, SOUTH = 4;
     float timer = 1.0f;
@@ -126,23 +126,25 @@ public class Peon extends Unit {
         }
     }
 
-    private void enterBuilding() {
+    public void enterBuilding() {
         boolean shouldEnter = false;
 
-        //  The building's construction is halted
-        if( targetBuilding.isReadyForConstruction() ){
-            System.out.println( "**Constructing building**" );
-            currentOrder = UnitOrder.CONSTRUCT_BUILDING;
-            targetBuilding.beginConstruction( this );
-            shouldEnter = true;
-        }
+        if( !targetBuilding.isCancelled() ){
+            //  The building's construction is halted
+            if( targetBuilding.isReadyForConstruction() ){
+                System.out.println( "**Constructing building**" );
+                currentOrder = UnitOrder.CONSTRUCT_BUILDING;
+                targetBuilding.beginBuildingConstruction( this );
+                shouldEnter = true;
+            }
 
-        //  The building is COMPLETE and can be entered
-        else if( targetBuilding.canBeEntered()){
-            System.out.println( "**Depositing at building**" );
-            currentOrder = UnitOrder.DEPOSIT;
-            timer = Constants.DROP_OFF_TIME;
-            shouldEnter = true;
+            //  The building is COMPLETE and can be entered
+            else if( targetBuilding.canBeEntered()){
+                System.out.println( "**Depositing at building**" );
+                currentOrder = UnitOrder.DEPOSIT;
+                timer = Constants.DROP_OFF_TIME;
+                shouldEnter = true;
+            }
         }
 
         if( shouldEnter ){
@@ -155,10 +157,9 @@ public class Peon extends Unit {
             currentOrder = UnitOrder.IDLE;
             targetBuilding = null;
         }
-
     }
 
-    private void exitBuilding() {
+    public void exitBuilding() {
         switch( currentOrder){
             case DEPOSIT:
                 System.out.println( "**Deposited materials.**" );
@@ -171,11 +172,19 @@ public class Peon extends Unit {
         ejectFromBuilding( targetBuilding.getSpotOnPerimeter() );
     }
 
-    private void moveToBuilding( Building building, MapTile destination ){
+    public void moveToBuilding( Building building, MapTile destination ){
         targetBuilding = building;
 
         currentOrder = UnitOrder.ENTER_BUILDING;
         movementComponent.setDestination( destination );
+    }
+
+    public void ejectFromBuilding( MapTile mapTile ){
+        setCurrentTile( mapTile );
+        move( mapTile.getWorldPosition() );
+        insideBuilding = false;
+        currentOrder = UnitOrder.IDLE;
+        targetBuilding = null;
     }
 
     @Override

@@ -4,14 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.redtoorange.warbound.utilities.Constants;
-import com.redtoorange.warbound.utilities.ControlState;
-import com.redtoorange.warbound.buildings.BuildingController;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.ui.UIController;
+import com.redtoorange.warbound.units.Unit;
 import com.redtoorange.warbound.units.UnitController;
 import com.redtoorange.warbound.units.UnitFactory;
+import com.redtoorange.warbound.utilities.Constants;
+import com.redtoorange.warbound.utilities.ControlState;
 
 /**
  * PlayerController.java - Description
@@ -59,10 +59,17 @@ public class PlayerController implements ClickListener {
         clickController = new MouseClickController( this );
         inputMultiplexer.addProcessor( clickController );
 
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 25, 25 ) ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 25, 20 ) ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 20, 25 ) ) );
-        unitController.addUnit( UnitFactory.BuildFootman( unitController, mapController.getTileByWorldPos( 20, 20 ) ) );
+        if( mapController.unitSpawns.size > 0){
+            for( MapTile tile : mapController.unitSpawns.keys()){
+                System.out.println( "Tile: " + tile );
+                System.out.println( "Type: " + mapController.unitSpawns.get( tile ) );
+
+                Unit u = UnitFactory.BuildUnit( mapController.unitSpawns.get( tile ), unitController, tile );
+                if( u != null){
+                    unitController.addUnit( u );
+                }
+            }
+        }
     }
 
     public void update( float deltaTime ) {

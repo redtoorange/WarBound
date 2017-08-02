@@ -3,6 +3,7 @@ package com.redtoorange.warbound.map;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.redtoorange.warbound.utilities.Constants;
@@ -42,6 +43,22 @@ public class MapTile {
         this.type = type;
 
         sprite = new Sprite( controller.getTexture( type ) );
+        sprite.setSize( 1, 1 );
+        sprite.setPosition( worldX, worldY );
+    }
+
+    public MapTile( float worldX, float worldY, int mapX, int mapY, TextureRegion region, MapController controller, String type ) {
+        this.controller = controller;
+
+        this.worldX = worldX;
+        this.worldY = worldY;
+
+        this.mapX = mapX;
+        this.mapY = mapY;
+
+        this.type = TileType.DIRT;
+
+        sprite = new Sprite( region );
         sprite.setSize( 1, 1 );
         sprite.setPosition( worldX, worldY );
     }

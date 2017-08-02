@@ -1,4 +1,4 @@
-package com.redtoorange.warbound.buildings;
+package com.redtoorange.warbound.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -7,16 +7,16 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.utilities.Constants;
-import com.redtoorange.warbound.utilities.ControlState;
-import com.redtoorange.warbound.controllers.CameraController;
-import com.redtoorange.warbound.controllers.Controller;
-import com.redtoorange.warbound.controllers.PlayerController;
+import com.redtoorange.warbound.buildings.Building;
+import com.redtoorange.warbound.buildings.BuildingFactory;
+import com.redtoorange.warbound.buildings.BuildingType;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.ui.ButtonLayout;
 import com.redtoorange.warbound.units.Peon;
 import com.redtoorange.warbound.units.UnitController;
+import com.redtoorange.warbound.utilities.Constants;
+import com.redtoorange.warbound.utilities.ControlState;
 
 /**
  * BuildingController.java - Description
@@ -35,6 +35,7 @@ public class BuildingController extends Controller{
 
     public BuildingController( PlayerController owner ) {
         super(owner);
+
         buildings = new Array< Building >();
         shapeRenderer = new ShapeRenderer();
     }
@@ -131,12 +132,12 @@ public class BuildingController extends Controller{
 
     public void cancelCurrentConstruction() {
         if ( currentBuilding != null ) {
-
             refundCurrentBuilding();
 
             currentBuilding.cancelConstruction();
             removeBuilding( currentBuilding );
-            currentBuilding = null;
+            deselectBuilding();
+
             System.out.println( "** Building Cancelled **" );
         }
     }
@@ -169,6 +170,7 @@ public class BuildingController extends Controller{
         return placed;
     }
 
+    /** Select a building within a given area. */
     public boolean selectBuilding( Vector2 start, Vector2 end ) {
         float x = Math.min( start.x, end.x );
         float y = Math.min( start.y, end.y );

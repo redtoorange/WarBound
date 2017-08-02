@@ -1,5 +1,7 @@
 package com.redtoorange.warbound.buildings;
 
+import com.redtoorange.warbound.controllers.BuildingController;
+
 /**
  * BuildingFactory.java - Description
  *
@@ -7,20 +9,15 @@ package com.redtoorange.warbound.buildings;
  * @version 7/18/2017
  */
 public class BuildingFactory {
-    /**
-     * Construct a default farm.
-     *
-     * @param controller Building controller for the game
-     * @return Constructed building ready to be placed.
-     */
-    public static Building BuildBarracks( BuildingController controller ) {
+    private static Building BuildBarracks( BuildingController controller ) {
         return new Barracks( "Barracks", 4, 4, controller );
     }
 
-    public static Building BuildFarm( BuildingController controller ) {
+    private static Building BuildFarm( BuildingController controller ) {
         return new Farm( "Farm", 2, 2, controller );
     }
 
+    /** Create a building of the given type and assign it to the given controller. */
     public static Building CreateBuildingInstance( BuildingType buildingType, BuildingController controller){
         Building buildingInstance = null;
 

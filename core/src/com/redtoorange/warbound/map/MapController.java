@@ -1,11 +1,20 @@
 package com.redtoorange.warbound.map;
 
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.MapObjects;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ObjectMap;
+import com.redtoorange.warbound.units.UnitType;
 import com.redtoorange.warbound.utilities.PerlinNoiseGenerator;
 
 /**
@@ -23,6 +32,50 @@ public class MapController implements WeightedGraph<MapTile>{
     private int height;
     private float startx;
     private float starty;
+
+    public ObjectMap<MapTile, UnitType> unitSpawns = new ObjectMap<MapTile, UnitType>(  );
+
+    public MapController( String name, float startx, float starty ){
+        TiledMap tiledMap = new TmxMapLoader( new InternalFileHandleResolver() ).load( name );
+        TiledMapTileLayer groundLayer = (TiledMapTileLayer ) tiledMap.getLayers().get( "ground" );
+
+        this.width = groundLayer.getWidth();
+        this.height = groundLayer.getHeight();
+
+
+        tiles = new MapTile[width][height];
+
+
+
+        this.startx = startx;
+        this.starty = starty;
+
+        for( int x = 0; x < width; x++){
+            for( int y = 0; y < height; y++){
+                TiledMapTile tile = groundLayer.getCell( x, y ).getTile();
+
+                String type = tile.getProperties().get( "type", String.class );
+
+                tiles[x][y] = new MapTile( x + startx, y + starty, x, y, tile.getTextureRegion(), this, type);
+            }
+        }
+
+        buildTraversalGraph( width, height );
+
+        MapObjects unitObjects = tiledMap.getLayers().get( "units" ).getObjects();
+        float tileWidth = tiledMap.getProperties().get( "tilewidth", Integer.class );
+        float tileHeight = tiledMap.getProperties().get( "tileheight", Integer.class );
+
+        for( RectangleMapObject obj : unitObjects.getByType( RectangleMapObject.class ) ){
+            float ox = obj.getRectangle().x / tileWidth;
+            float oy = obj.getRectangle().y / tileHeight;
+
+            MapTile t = getTileByGridPos( MathUtils.floor( ox ), MathUtils.floor( oy ) );
+            String s = obj.getProperties().get( "Unit", String.class );
+
+            unitSpawns.put( t, UnitType.parseString( s ));
+        }
+    }
 
     public MapController( float startx, float starty, int width, int height){
         tileAtlas = new TextureAtlas( "tiles/Tiles.pack" );

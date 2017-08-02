@@ -2,8 +2,9 @@ package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.map.MapTile;
-import com.redtoorange.warbound.units.Peon;
+import com.redtoorange.warbound.units.Unit;
 import com.redtoorange.warbound.units.UnitFactory;
 import com.redtoorange.warbound.units.UnitType;
 
@@ -36,7 +37,7 @@ public class Barracks extends Building {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        switch ( buildingState ) {
+        switch ( currentState ) {
             case COMPLETE:
                 if ( producingUnit )
                     handleUnitProduction( deltaTime );
@@ -45,11 +46,12 @@ public class Barracks extends Building {
         }
     }
 
+    /** Subtract deltaTime from the total progress, when it reaches 0, the unit will be produced. */
     private void handleUnitProduction( float deltaTime ) {
         progress -= deltaTime;
 
         if ( progress <= 0.0f ) {
-            produceUnit();
+            produceQueuedUnit();
             producingUnit = false;
         }
     }
@@ -66,10 +68,10 @@ public class Barracks extends Building {
     }
 
     /** See if the player controller's resource controller has the required resources. */
-    private boolean hasNeededResources( UnitType unit ) {
+    private boolean hasNeededResources( UnitType unitType ) {
         return owner.getResourceController().canAfford(
-                unit.goldCost, unit.woodCost,
-                unit.oilCost, unit.foodCost
+                unitType.goldCost, unitType.woodCost,
+                unitType.oilCost, unitType.foodCost
         );
     }
 
@@ -86,16 +88,19 @@ public class Barracks extends Building {
     }
 
     /** Unit is finished, completed it and put it on an empty tile. */
-    private void produceUnit() {
+    private void produceQueuedUnit() {
         MapTile tile = getSpotOnPerimeter();
 
         if ( tile != null ) {
-            Peon p = ( Peon ) UnitFactory.BuildFootman( owner.getUnitController(), currentTiles[0][0].getEmptyOutsideArea( width, height, -1, -1 ) );
-            owner.getUnitController().addUnit( p );
+            Unit createdUnit = UnitFactory.BuildUnit( unitBeingProduced, owner.getUnitController(), tile );
+
+            if( createdUnit != null )
+                owner.getUnitController().addUnit( createdUnit );
         }
     }
 
-    public void cancelQueued() {
+    /** Cancel the production and refund the resources. */
+    public void cancelQueuedUnit() {
         producingUnit = false;
 
         owner.getResourceController().chargeAmount(

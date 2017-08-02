@@ -20,7 +20,8 @@ public class PlayScreen extends ScreenAdapter {
     public PlayScreen() {
         super();
 
-        mapController = new MapController( 0, 0, 50, 50 );
+//        mapController = new MapController( 0, 0, 50, 50 );
+        mapController = new MapController( "maps/map_1.tmx", 10, 10 );
         playerController = new PlayerController( mapController);
     }
 

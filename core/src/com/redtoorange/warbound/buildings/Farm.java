@@ -2,6 +2,7 @@ package com.redtoorange.warbound.buildings;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.redtoorange.warbound.controllers.BuildingController;
 import com.redtoorange.warbound.utilities.Resource;
 
 /**
@@ -27,8 +28,8 @@ public class Farm extends Building {
     }
 
     @Override
-    protected void finishConstruction() {
-        super.finishConstruction();
+    protected void completeBuildingConstruction() {
+        super.completeBuildingConstruction();
         owner.getResourceController().changeResource( Resource.FOOD_STORED, foodToAdd );
     }
 }

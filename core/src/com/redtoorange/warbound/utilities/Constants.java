@@ -20,7 +20,7 @@ public class Constants {
 
     public static float DROP_OFF_TIME = 1.0f;
 
-    public static final String TITLE = "Test Window";
+    public static final String TITLE = "War Bound";
     public static final int WIDTH = 1422;
     public static final int HEIGHT = 800;
 }
