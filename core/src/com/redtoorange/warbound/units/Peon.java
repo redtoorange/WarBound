@@ -1,13 +1,14 @@
 package com.redtoorange.warbound.units;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.redtoorange.warbound.utilities.Constants;
-import com.redtoorange.warbound.units.ai.UnitOrder;
 import com.redtoorange.warbound.buildings.Building;
 import com.redtoorange.warbound.map.MapTile;
+import com.redtoorange.warbound.units.ai.UnitOrder;
+import com.redtoorange.warbound.utilities.Constants;
 
 /**
  * Peon.java - Description
@@ -112,9 +113,7 @@ public class Peon extends Unit implements Builder {
                 break;
 
             case CONSTRUCT_BUILDING:
-                if( !targetBuilding.isCurrentlyBeingBuilt())
-                    exitBuilding();
-
+                //STUB: Do do anything?
                 break;
             case DEPOSIT:
                 timer -= deltaTime;
@@ -126,21 +125,22 @@ public class Peon extends Unit implements Builder {
         }
     }
 
+    @Override
     public void enterBuilding() {
         boolean shouldEnter = false;
 
         if( !targetBuilding.isCancelled() ){
             //  The building's construction is halted
             if( targetBuilding.isReadyForConstruction() ){
-                System.out.println( "**Constructing building**" );
+                Gdx.app.log( TAG, " Constructing building" );
                 currentOrder = UnitOrder.CONSTRUCT_BUILDING;
                 targetBuilding.beginBuildingConstruction( this );
                 shouldEnter = true;
             }
 
             //  The building is COMPLETE and can be entered
-            else if( targetBuilding.canBeEntered()){
-                System.out.println( "**Depositing at building**" );
+            else if( targetBuilding.canBeEntered() ){
+                Gdx.app.log( TAG, " Depositing at building" );
                 currentOrder = UnitOrder.DEPOSIT;
                 timer = Constants.DROP_OFF_TIME;
                 shouldEnter = true;
@@ -148,30 +148,31 @@ public class Peon extends Unit implements Builder {
         }
 
         if( shouldEnter ){
+            Gdx.app.log( TAG, " Entering building" );
             controller.deselectUnit( this );
             insideBuilding = true;
             setCurrentTile( null );
         }
         else{
-            System.out.println( "**Cannot enter building**" );
+            Gdx.app.log( TAG, " Cannot enter building" );
             currentOrder = UnitOrder.IDLE;
             targetBuilding = null;
         }
     }
 
+    @Override
     public void exitBuilding() {
         switch( currentOrder){
             case DEPOSIT:
-                System.out.println( "**Deposited materials.**" );
+                Gdx.app.log( TAG, " Deposited materials" );
                 break;
             case CONSTRUCT_BUILDING:
-                System.out.println( "**Finished Building.**" );
+                Gdx.app.log( TAG, " Finished Building" );
                 break;
         }
-
-        ejectFromBuilding( targetBuilding.getSpotOnPerimeter() );
     }
 
+    @Override
     public void moveToBuilding( Building building, MapTile destination ){
         targetBuilding = building;
 
@@ -179,12 +180,20 @@ public class Peon extends Unit implements Builder {
         movementComponent.setDestination( destination );
     }
 
+    @Override
     public void ejectFromBuilding( MapTile mapTile ){
+        if( mapTile == null ) {
+            System.out.println( "Peon has had it's current tile set to null by the eject command." );
+            return;
+        }
+
         setCurrentTile( mapTile );
         move( mapTile.getWorldPosition() );
+
+        exitBuilding();
+
         insideBuilding = false;
         currentOrder = UnitOrder.IDLE;
-        targetBuilding = null;
     }
 
     @Override

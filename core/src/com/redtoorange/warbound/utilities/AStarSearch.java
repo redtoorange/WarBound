@@ -26,6 +26,13 @@ public class AStarSearch {
      * @param goal  Ending Tile
      */
     public AStarSearch( WeightedGraph< MapTile > graph, MapTile start, MapTile goal ) {
+        if( start == null || goal == null) {
+            System.out.println( "**Error finding path!**" );
+            System.out.println( "\tstart: " + start );
+            System.out.println( "\tgoal: " + goal );
+            return;
+        }
+
         PriorityQueue< MapTile > frontier = new PriorityQueue< MapTile >();
         frontier.Enqueue( start, 0 );
 

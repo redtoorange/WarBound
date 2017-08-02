@@ -116,11 +116,12 @@ public abstract class Unit extends GameObject {
         if( currentTile != null)
             currentTile.setOccupier( null );
 
-
         currentTile = newTile;
 
         if( currentTile != null)
             currentTile.setOccupier( this );
+        else
+            System.out.println( "Current Tile has been set to NULL" );
     }
 
     public MovementComponent getMovementComponent() {
@@ -137,5 +138,9 @@ public abstract class Unit extends GameObject {
 
     public boolean isInsideBuilding() {
         return insideBuilding;
+    }
+
+    public boolean isSelectable(){
+        return !insideBuilding;
     }
 }

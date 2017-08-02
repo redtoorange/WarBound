@@ -1,5 +1,6 @@
 package com.redtoorange.warbound.buildings;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -198,32 +199,43 @@ public abstract class Building extends GameObject {
         }
     }
 
-    /** The progress has reached 100% */
+    /** Update the building's state, eject the builder, update the UI.*/
     protected void completeBuildingConstruction() {
-        System.out.println( TYPE + " complete!");
+        Gdx.app.log( TAG, "Complete!");
+
         sprite.setRegion( regions[COMPLETE] );
         currentState = BuildingState.COMPLETE;
+
+        if ( builder != null ) {
+            builder.ejectFromBuilding( getSpotOnPerimeter() );
+            builder = null;
+        }
 
         if( controller.getCurrentBuilding() == this)
             controller.updateUI();
     }
 
 
+    /** Update the building's state, clear out tiles, eject the builder.*/
     public void cancelConstruction() {
-        System.out.println( "**Cancel this building**" );
+        Gdx.app.log( TAG, "Cancelled." );
         currentState = BuildingState.CANCELLED;
 
-        if ( builder != null )
-            builder.ejectFromBuilding( getCentralTile() );
-
+        //De-occupy all tiles
         for ( int x = 0; x < width; x++ )
             for ( int y = 0; y < height; y++ )
                 currentTiles[x][y].setOccupier( null );
+
+        //Eject the builder on a central tiles
+        if ( builder != null ) {
+            builder.ejectFromBuilding( getCentralTile() );
+            builder = null;
+        }
     }
 
     /** Select an empty spot along the perimeter of the Building. */
     public MapTile getSpotOnPerimeter() {
-        return currentTiles[0][0].getEmptyOutsideArea( width, width, -1, -1 );
+        return currentTiles[0][0].getEmptyOutsideArea( width, height, -1, -1 );
     }
 
     public boolean canBeEntered() {

@@ -333,7 +333,6 @@ public class MapTile {
     public MapTile getEmptyOutsideArea( int width, int height, int offsetX, int offsetY){
         MapTile empty = null;
 
-
         for( int y = offsetY; y <= height && empty == null; y++){
             for( int x = offsetX; x <= width && empty == null; x++){
                 MapTile t = controller.getTileByGridPos( mapX + x, mapY + y );
@@ -343,7 +342,7 @@ public class MapTile {
         }
 
         if( empty == null){
-            empty = getEmptyOutsideArea( ++width, ++height, --offsetX, --offsetY );
+            empty = getEmptyOutsideArea( width + 1, height + 1, offsetX - 1, offsetY - 1 );
         }
 
         return empty;

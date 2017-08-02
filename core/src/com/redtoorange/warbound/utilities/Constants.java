@@ -21,6 +21,8 @@ public class Constants {
     public static float DROP_OFF_TIME = 1.0f;
 
     public static final String TITLE = "War Bound";
-    public static final int WIDTH = 1422;
-    public static final int HEIGHT = 800;
+
+    public static final int DESKTOP_WIDTH = 1366;
+    public static final int DESKTOP_HEIGHT = 768;
+    public static final boolean BORDERLESS = true;
 }

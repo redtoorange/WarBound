@@ -11,8 +11,13 @@ public class DesktopLauncher {
 
 		config.title = Constants.TITLE;
 
-		config.width = Constants.WIDTH;
-		config.height = Constants.HEIGHT;
+		config.width = Constants.DESKTOP_WIDTH;
+		config.height = Constants.DESKTOP_HEIGHT;
+
+		config.resizable = false;
+
+		if( Constants.BORDERLESS )
+			System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
 
 		new LwjglApplication(new MainGame(), config);
 	}

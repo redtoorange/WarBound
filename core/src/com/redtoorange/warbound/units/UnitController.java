@@ -76,7 +76,7 @@ public class UnitController extends Controller{
         Rectangle selectionRect = new Rectangle( x, y, width, height );
 
         for ( Unit u : units ) {
-            if ( selectionRect.overlaps( u.getBoundingBox() ) )
+            if ( selectionRect.overlaps( u.getBoundingBox() ) && u.isSelectable() )
                 selectedUnits.add( u );
         }
 

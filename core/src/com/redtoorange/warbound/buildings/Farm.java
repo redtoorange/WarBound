@@ -30,6 +30,7 @@ public class Farm extends Building {
     @Override
     protected void completeBuildingConstruction() {
         super.completeBuildingConstruction();
+
         owner.getResourceController().changeResource( Resource.FOOD_STORED, foodToAdd );
     }
 }
