@@ -3,9 +3,10 @@ package com.redtoorange.warbound.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.ScreenAdapter;
-import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.controllers.PlayerController;
 import com.redtoorange.warbound.map.MapController;
+import com.redtoorange.warbound.ui.DebugUI;
+import com.redtoorange.warbound.utilities.Constants;
 
 /**
  * PlayScreen.java - Description
@@ -16,6 +17,8 @@ import com.redtoorange.warbound.map.MapController;
 public class PlayScreen extends ScreenAdapter {
     private MapController mapController;
     private PlayerController playerController;
+    private DebugUI debugUI;
+
 
     public PlayScreen() {
         super();
@@ -23,6 +26,7 @@ public class PlayScreen extends ScreenAdapter {
 //        mapController = new MapController( 0, 0, 50, 50 );
         mapController = new MapController( "maps/map_1.tmx", 10, 10 );
         playerController = new PlayerController( mapController);
+        debugUI = new DebugUI( playerController, mapController );
     }
 
     /**
@@ -51,6 +55,7 @@ public class PlayScreen extends ScreenAdapter {
 
         mapController.update( deltaTime );
         playerController.update( deltaTime );
+        debugUI.update( deltaTime );
     }
 
     /**
@@ -58,6 +63,7 @@ public class PlayScreen extends ScreenAdapter {
      */
     private void draw( ){
         playerController.draw();
+        debugUI.draw();
     }
 
     /**
@@ -69,6 +75,7 @@ public class PlayScreen extends ScreenAdapter {
     public void resize( int width, int height ) {
         super.resize( width, height );
         playerController.resize( width, height );
+        debugUI.resize( width, height );
     }
 
     /**

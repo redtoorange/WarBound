@@ -157,6 +157,15 @@ public class UnitController extends Controller{
         return p;
     }
 
+    public Unit getFirstSelectedUnit(){
+        Unit u = null;
+
+        if( selectedUnits.size > 0)
+            u = selectedUnits.get( 0 );
+
+        return u;
+    }
+
     public boolean hasUnitsSelected() {
         return selectedUnits.size > 0;
     }

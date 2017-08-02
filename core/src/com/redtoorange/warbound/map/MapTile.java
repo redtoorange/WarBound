@@ -96,7 +96,7 @@ public class MapTile {
 
     @Override
     public String toString() {
-        return "Tile at (" + worldX + ", " + worldY + ").";
+        return "Tile at (" + mapX + ", " + mapY + ").";
     }
 
     public int getMapX() {

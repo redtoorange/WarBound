@@ -15,7 +15,6 @@ public class MainGame extends Game {
 	@Override
 	public void render() {
 		clearScreen();
-
 		super.render();
 	}
 

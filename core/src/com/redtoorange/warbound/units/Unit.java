@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.redtoorange.warbound.GameObject;
 import com.redtoorange.warbound.units.ai.MovementComponent;
 import com.redtoorange.warbound.utilities.Facing;
@@ -142,5 +143,43 @@ public abstract class Unit extends GameObject {
 
     public boolean isSelectable(){
         return !insideBuilding;
+    }
+
+    public String getDebugLog(){
+        StringBuilder builder = new StringBuilder(  );
+
+        builder.append( "Current Facing: \t" );
+        builder.append( currentFacing );
+
+        builder.append( "\nCurrent Order: \t" );
+        builder.append( currentOrder );
+
+        builder.append( "\nSpeed: " );
+        builder.append( speed );
+
+        builder.append( "\nCurrent Tile: \t" );
+        builder.append( currentTile );
+
+        if( currentTile != null){
+            builder.append( "\nTile Position: " );
+            builder.append( currentTile.getMapX() + ", " + currentTile.getMapY() );
+        }
+
+        builder.append( "\nWorld Position: " );
+        builder.append( sprite.getX() + ", " + sprite.getX() );
+
+        builder.append( "\nSelected: " );
+        builder.append( selected );
+
+        builder.append( "\nInside a Building: " );
+        builder.append( insideBuilding );
+
+        if( targetBuilding != null) {
+            builder.append( "\nTarget Building: \t" );
+            builder.append( targetBuilding );
+        }
+
+        builder.append( "\n" );
+        return builder.toString();
     }
 }

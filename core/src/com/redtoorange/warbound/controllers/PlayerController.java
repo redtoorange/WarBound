@@ -10,7 +10,6 @@ import com.redtoorange.warbound.ui.UIController;
 import com.redtoorange.warbound.units.Unit;
 import com.redtoorange.warbound.units.UnitController;
 import com.redtoorange.warbound.units.UnitFactory;
-import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.utilities.ControlState;
 
 /**
@@ -102,10 +101,6 @@ public class PlayerController implements ClickListener {
             buildingController.renderSelected( );
 
         uiController.draw();
-
-        if ( Constants.DEBUGGING ) {
-            unitController.debugDraw();
-        }
     }
 
     /** @return Is the player placing a building while units are selected */
@@ -240,6 +235,10 @@ public class PlayerController implements ClickListener {
 
     public ControlState getControlState() {
         return controlState;
+    }
+
+    public InputMultiplexer getInputMultiplexer() {
+        return inputMultiplexer;
     }
 
     public void setControlState( ControlState controlState ) {

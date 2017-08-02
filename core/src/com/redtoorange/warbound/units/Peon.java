@@ -193,6 +193,7 @@ public class Peon extends Unit implements Builder {
         exitBuilding();
 
         insideBuilding = false;
+        targetBuilding = null;
         currentOrder = UnitOrder.IDLE;
     }
 
