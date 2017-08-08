@@ -4,6 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.redtoorange.warbound.buildings.Building;
+import com.redtoorange.warbound.buildings.BuildingFactory;
 import com.redtoorange.warbound.map.MapController;
 import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.ui.UIController;
@@ -18,7 +22,7 @@ import com.redtoorange.warbound.utilities.ControlState;
  * @author Andrew McGuiness
  * @version 7/19/2017
  */
-public class PlayerController implements ClickListener {
+public class PlayerController implements ClickListener, Json.Serializable{
     private SpriteBatch batch;
     private InputMultiplexer inputMultiplexer;
 
@@ -36,6 +40,16 @@ public class PlayerController implements ClickListener {
 
     private ControlState controlState = ControlState.IDLE;
 
+
+    @Override
+    public void write( Json json ) {
+
+    }
+
+    @Override
+    public void read( Json json, JsonValue jsonData ) {
+
+    }
 
     public PlayerController( MapController mapController ) {
         this.mapController = mapController;
@@ -60,13 +74,19 @@ public class PlayerController implements ClickListener {
 
         if( mapController.unitSpawns.size > 0){
             for( MapTile tile : mapController.unitSpawns.keys()){
-                System.out.println( "Tile: " + tile );
-                System.out.println( "Type: " + mapController.unitSpawns.get( tile ) );
-
                 Unit u = UnitFactory.BuildUnit( mapController.unitSpawns.get( tile ), unitController, tile );
-                if( u != null){
+
+                if( u != null)
                     unitController.addUnit( u );
-                }
+            }
+        }
+
+        if( mapController.buildingSpawns.size > 0){
+            for( MapTile tile : mapController.buildingSpawns.keys()){
+                Building b = BuildingFactory.CreateBuildingInstance( mapController.buildingSpawns.get( tile ), buildingController, tile );
+
+                if( b != null)
+                    buildingController.addBuilding( b );
             }
         }
     }
@@ -254,7 +274,7 @@ public class PlayerController implements ClickListener {
                 break;
 
             case PLACING_BUILDING:
-                buildingController.cancelPlacing();
+//                buildingController.cancelPlacing();
                 break;
         }
 

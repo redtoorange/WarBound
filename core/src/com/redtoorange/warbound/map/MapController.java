@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.redtoorange.warbound.buildings.BuildingType;
 import com.redtoorange.warbound.units.UnitType;
 import com.redtoorange.warbound.utilities.PerlinNoiseGenerator;
 
@@ -34,10 +35,12 @@ public class MapController implements WeightedGraph<MapTile>{
     private float starty;
 
     public ObjectMap<MapTile, UnitType> unitSpawns = new ObjectMap<MapTile, UnitType>(  );
+    public ObjectMap<MapTile, BuildingType> buildingSpawns = new ObjectMap<MapTile, BuildingType>(  );
 
     public MapController( String name, float startx, float starty ){
         TiledMap tiledMap = new TmxMapLoader( new InternalFileHandleResolver() ).load( name );
         TiledMapTileLayer groundLayer = (TiledMapTileLayer ) tiledMap.getLayers().get( "ground" );
+//        TiledMapTileSet tileSet = tiledMap.getTileSets().getTileSet( 0 );
 
         this.width = groundLayer.getWidth();
         this.height = groundLayer.getHeight();
@@ -53,8 +56,7 @@ public class MapController implements WeightedGraph<MapTile>{
         for( int x = 0; x < width; x++){
             for( int y = 0; y < height; y++){
                 TiledMapTile tile = groundLayer.getCell( x, y ).getTile();
-
-                String type = tile.getProperties().get( "type", String.class );
+                TileType type = TileType.parseString( tile.getProperties().get( "type", String.class ) );
 
                 tiles[x][y] = new MapTile( x + startx, y + starty, x, y, tile.getTextureRegion(), this, type);
             }
@@ -62,10 +64,10 @@ public class MapController implements WeightedGraph<MapTile>{
 
         buildTraversalGraph( width, height );
 
-        MapObjects unitObjects = tiledMap.getLayers().get( "units" ).getObjects();
         float tileWidth = tiledMap.getProperties().get( "tilewidth", Integer.class );
         float tileHeight = tiledMap.getProperties().get( "tileheight", Integer.class );
 
+        MapObjects unitObjects = tiledMap.getLayers().get( "units" ).getObjects();
         for( RectangleMapObject obj : unitObjects.getByType( RectangleMapObject.class ) ){
             float ox = obj.getRectangle().x / tileWidth;
             float oy = obj.getRectangle().y / tileHeight;
@@ -74,6 +76,17 @@ public class MapController implements WeightedGraph<MapTile>{
             String s = obj.getProperties().get( "Unit", String.class );
 
             unitSpawns.put( t, UnitType.parseString( s ));
+        }
+
+        MapObjects buildingObjects = tiledMap.getLayers().get( "buildings" ).getObjects();
+        for( RectangleMapObject obj : buildingObjects.getByType( RectangleMapObject.class ) ){
+            float ox = (obj.getRectangle().x / tileWidth) + ((obj.getRectangle().width / tileWidth) / 2);
+            float oy = (obj.getRectangle().y / tileHeight) + ((obj.getRectangle().height / tileHeight) / 2);
+
+            MapTile t = getTileByGridPos( MathUtils.floor( ox ), MathUtils.floor( oy ) );
+            String s = obj.getProperties().get( "building", String.class );
+
+            buildingSpawns.put( t, BuildingType.parseString( s ));
         }
     }
 

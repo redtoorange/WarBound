@@ -24,7 +24,7 @@ import com.redtoorange.warbound.utilities.ControlState;
  * @author Andrew McGuiness
  * @version 7/18/2017
  */
-public class BuildingController extends Controller{
+public class BuildingController extends Controller {
     boolean initialized = false;
     private ShapeRenderer shapeRenderer;
     private Array< Building > buildings;
@@ -34,7 +34,7 @@ public class BuildingController extends Controller{
     private CameraController cameraController;
 
     public BuildingController( PlayerController owner ) {
-        super(owner);
+        super( owner );
 
         buildings = new Array< Building >();
         shapeRenderer = new ShapeRenderer();
@@ -61,7 +61,7 @@ public class BuildingController extends Controller{
                 buildingType.oilCost, buildingType.foodCost
         );
 
-        return BuildingFactory.CreateBuildingInstance( buildingType, this );
+        return BuildingFactory.CreateBuildingConstruction( buildingType, this );
     }
 
     private boolean checkResources( BuildingType b ) {

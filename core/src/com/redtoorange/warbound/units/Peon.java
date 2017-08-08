@@ -46,48 +46,48 @@ public class Peon extends Unit implements Builder {
         flipped = false;
 //        switch ( currentFacing ) {
         switch ( movementComponent.unitFacing ) {
-                case NORTH:
-                    currentAnimation = animations[NORTH];
-                    break;
+            case NORTH:
+                currentAnimation = animations[NORTH];
+                break;
 
-                case SOUTH:
-                    currentAnimation = animations[SOUTH];
-                    break;
+            case SOUTH:
+                currentAnimation = animations[SOUTH];
+                break;
 
-                //Flip Pair
-                case EAST:
-                    currentAnimation = animations[EAST];
-                    break;
+            //Flip Pair
+            case EAST:
+                currentAnimation = animations[EAST];
+                break;
 
-                case WEST:
-                    flipped = true;
-                    currentAnimation = animations[EAST];
-                    break;
+            case WEST:
+                flipped = true;
+                currentAnimation = animations[EAST];
+                break;
 
-                //Flip Pair
-                case NORTH_EAST:
-                    currentAnimation = animations[N_EAST];
-                    break;
+            //Flip Pair
+            case NORTH_EAST:
+                currentAnimation = animations[N_EAST];
+                break;
 
-                case NORTH_WEST:
-                    flipped = true;
-                    currentAnimation = animations[N_EAST];
-                    break;
+            case NORTH_WEST:
+                flipped = true;
+                currentAnimation = animations[N_EAST];
+                break;
 
-                //Flip Pair
-                case SOUTH_EAST:
-                    currentAnimation = animations[S_EAST];
-                    break;
+            //Flip Pair
+            case SOUTH_EAST:
+                currentAnimation = animations[S_EAST];
+                break;
 
-                case SOUTH_WEST:
-                    flipped = true;
-                    currentAnimation = animations[S_EAST];
-                    break;
-            }
+            case SOUTH_WEST:
+                flipped = true;
+                currentAnimation = animations[S_EAST];
+                break;
+        }
     }
 
     public void draw( SpriteBatch batch ) {
-        if( !insideBuilding ){
+        if ( !insideBuilding ) {
             sprite.setRegion( currentAnimation.getKeyFrame( animationTime ) );
             sprite.setFlip( flipped, false );
             super.draw( batch );
@@ -97,17 +97,16 @@ public class Peon extends Unit implements Builder {
     public void update( float deltaTime ) {
         super.update( deltaTime );
 
-        if( currentOrder != UnitOrder.IDLE ) {
+        if ( currentOrder != UnitOrder.IDLE ) {
             updateSpriteFacing();
             animationTime += deltaTime;
-        }
-        else
+        } else
             animationTime = 0.0f;
 
-        switch ( currentOrder ){
+        switch ( currentOrder ) {
             case ENTER_BUILDING:
                 movementComponent.execute( deltaTime );
-                if( movementComponent.isIdle())
+                if ( movementComponent.isIdle() )
                     enterBuilding();
 
                 break;
@@ -118,7 +117,7 @@ public class Peon extends Unit implements Builder {
             case DEPOSIT:
                 timer -= deltaTime;
 
-                if( timer <= 0.0f )
+                if ( timer <= 0.0f )
                     exitBuilding();
 
                 break;
@@ -129,9 +128,9 @@ public class Peon extends Unit implements Builder {
     public void enterBuilding() {
         boolean shouldEnter = false;
 
-        if( !targetBuilding.isCancelled() ){
+        if ( !targetBuilding.isCancelled() ) {
             //  The building's construction is halted
-            if( targetBuilding.isReadyForConstruction() ){
+            if ( targetBuilding.isReadyForConstruction() ) {
                 Gdx.app.log( TAG, " Constructing building" );
                 currentOrder = UnitOrder.CONSTRUCT_BUILDING;
                 targetBuilding.beginBuildingConstruction( this );
@@ -139,7 +138,7 @@ public class Peon extends Unit implements Builder {
             }
 
             //  The building is COMPLETE and can be entered
-            else if( targetBuilding.canBeEntered() ){
+            else if ( targetBuilding.canBeEntered() ) {
                 Gdx.app.log( TAG, " Depositing at building" );
                 currentOrder = UnitOrder.DEPOSIT;
                 timer = Constants.DROP_OFF_TIME;
@@ -147,13 +146,12 @@ public class Peon extends Unit implements Builder {
             }
         }
 
-        if( shouldEnter ){
+        if ( shouldEnter ) {
             Gdx.app.log( TAG, " Entering building" );
             controller.deselectUnit( this );
             insideBuilding = true;
             setCurrentTile( null );
-        }
-        else{
+        } else {
             Gdx.app.log( TAG, " Cannot enter building" );
             currentOrder = UnitOrder.IDLE;
             targetBuilding = null;
@@ -162,7 +160,7 @@ public class Peon extends Unit implements Builder {
 
     @Override
     public void exitBuilding() {
-        switch( currentOrder){
+        switch ( currentOrder ) {
             case DEPOSIT:
                 Gdx.app.log( TAG, " Deposited materials" );
                 break;
@@ -173,7 +171,7 @@ public class Peon extends Unit implements Builder {
     }
 
     @Override
-    public void moveToBuilding( Building building, MapTile destination ){
+    public void moveToBuilding( Building building, MapTile destination ) {
         targetBuilding = building;
 
         currentOrder = UnitOrder.ENTER_BUILDING;
@@ -181,8 +179,8 @@ public class Peon extends Unit implements Builder {
     }
 
     @Override
-    public void ejectFromBuilding( MapTile mapTile ){
-        if( mapTile == null ) {
+    public void ejectFromBuilding( MapTile mapTile ) {
+        if ( mapTile == null ) {
             System.out.println( "Peon has had it's current tile set to null by the eject command." );
             return;
         }
@@ -199,10 +197,9 @@ public class Peon extends Unit implements Builder {
 
     @Override
     public void giveMoveOrder( MapTile destination ) {
-        if( destination.isOccupied() && destination.getOccupier() instanceof Building){
-            moveToBuilding( (Building)destination.getOccupier(), destination );
-        }
-        else {
+        if ( destination.isOccupied() && destination.getOccupier() instanceof Building ) {
+            moveToBuilding( ( Building ) destination.getOccupier(), destination );
+        } else {
             targetBuilding = null;
             super.giveMoveOrder( destination );
         }

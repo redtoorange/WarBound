@@ -15,6 +15,25 @@ import com.redtoorange.warbound.units.UnitType;
  * @version 7/22/2017
  */
 public class ControlButtonState {
+    private static final String ICON_DIR = "ui_icons/";
+
+    private static final Texture[] buttonRegions = {
+            new Texture( ICON_DIR + "attack.png" ),
+            new Texture( ICON_DIR + "defend.png" ),
+            new Texture( ICON_DIR + "move.png" ),
+
+            new Texture( ICON_DIR + "tier1.png" ),
+            new Texture( ICON_DIR + "tier2.png" ),
+            new Texture( ICON_DIR + "mine.png" ),
+
+            new Texture( ICON_DIR + "repair.png" ),
+            new Texture( ICON_DIR + "stop.png" )
+    };
+
+    private static final int ATTACK = 0, DEFEND = 1, MOVE = 2,
+            TIER_1 = 3, TIER_2 = 4, MINE = 5,
+            REPAIR = 6, STOP = 7, ICON_COUNT = 8;
+
     public static void setLayout( ButtonLayout layout, UIController uiController ) {
         PlayerController owner = uiController.getOwner();
         ControlButton[] buttonGrid = uiController.getButtonGrid();
@@ -50,7 +69,7 @@ public class ControlButtonState {
     }
 
     private static void setPeonGrid( ControlButton[] buttonGrid, final PlayerController owner ) {
-        buttonGrid[0].setImage( new Texture( "wc2_buildings/farm.png" ) );
+        buttonGrid[0].setImage( buttonRegions[TIER_1] );
         buttonGrid[0].setChangeListener( new ChangeListener() {
             @Override
             public void changed( ChangeEvent event, Actor actor ) {
@@ -58,7 +77,7 @@ public class ControlButtonState {
             }
         } );
 
-        buttonGrid[1].setImage( new Texture( "wc2_buildings/barracks.png" ) );
+        buttonGrid[1].setImage( buttonRegions[TIER_2] );
         buttonGrid[1].setChangeListener( new ChangeListener() {
             @Override
             public void changed( ChangeEvent event, Actor actor ) {
@@ -82,7 +101,7 @@ public class ControlButtonState {
     }
 
     private static void setConstructionGrid( ControlButton[] buttonGrid, final PlayerController owner ) {
-        buttonGrid[8].setImage( new Texture( "badlogic.jpg" ) );
+        buttonGrid[8].setImage( buttonRegions[STOP] );
         buttonGrid[8].setChangeListener( new ChangeListener() {
             @Override
             public void changed( ChangeEvent event, Actor actor ) {

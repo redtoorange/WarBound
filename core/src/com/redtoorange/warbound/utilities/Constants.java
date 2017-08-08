@@ -24,5 +24,9 @@ public class Constants {
 
     public static final int DESKTOP_WIDTH = 1366;
     public static final int DESKTOP_HEIGHT = 768;
+
+//    public static final int DESKTOP_WIDTH = 1920;
+//    public static final int DESKTOP_HEIGHT = 1080;
+
     public static final boolean BORDERLESS = true;
 }

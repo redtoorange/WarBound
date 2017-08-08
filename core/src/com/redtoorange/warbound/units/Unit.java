@@ -38,8 +38,9 @@ public abstract class Unit extends GameObject {
     protected boolean selected = false;
     protected boolean insideBuilding = false;
     protected Building targetBuilding;
+    private UnitTable debugTable;
 
-    public Unit( MapTile startTile, TextureRegion texture, UnitController controller){
+    public Unit( MapTile startTile, TextureRegion texture, UnitController controller ) {
         super( controller );
 
         sprite = new Sprite( texture );
@@ -53,51 +54,55 @@ public abstract class Unit extends GameObject {
         owner = controller.getOwner();
     }
 
+    public static String getTAG() {
+        return TAG;
+    }
+
     /** Handles the default IDLE and MOVE orders. */
-    public void update( float deltaTime){
-        switch ( currentOrder ){
+    public void update( float deltaTime ) {
+        switch ( currentOrder ) {
             case IDLE:
                 break;
             case MOVE:
                 movementComponent.execute( deltaTime );
-                if( movementComponent.isIdle())
+                if ( movementComponent.isIdle() )
                     currentOrder = UnitOrder.IDLE;
                 break;
         }
 
     }
 
-    public void draw( SpriteBatch batch){
+    public void draw( SpriteBatch batch ) {
         sprite.draw( batch );
     }
 
-    public void select( boolean selected ){
+    public void select( boolean selected ) {
         this.selected = selected;
     }
 
-    public Rectangle getBoundingBox(){
+    public Rectangle getBoundingBox() {
         return sprite.getBoundingRectangle();
     }
 
-
     /**
      * Order the unit to move to the indicated tile or a close one.
+     *
      * @param destination Tile to move to
      */
-    public void giveMoveOrder( MapTile destination ){
+    public void giveMoveOrder( MapTile destination ) {
         currentOrder = UnitOrder.MOVE;
         movementComponent.setDestination( destination );
     }
 
-    public void giveAttackOrder( GameObject target ){
+    public void giveAttackOrder( GameObject target ) {
         //STUB
     }
 
-    public void move( Vector2 newPos ){
+    public void move( Vector2 newPos ) {
         sprite.setPosition( newPos.x, newPos.y );
     }
 
-    public void translate( Vector2 amount ){
+    public void translate( Vector2 amount ) {
         sprite.translate( amount.x, amount.y );
     }
 
@@ -109,7 +114,7 @@ public abstract class Unit extends GameObject {
         this.speed = speed;
     }
 
-    public Vector2 getPosition(){
+    public Vector2 getPosition() {
         return new Vector2( sprite.getX(), sprite.getY() );
     }
 
@@ -118,12 +123,12 @@ public abstract class Unit extends GameObject {
     }
 
     public void setCurrentTile( MapTile newTile ) {
-        if( currentTile != null)
+        if ( currentTile != null )
             currentTile.setOccupier( null );
 
         currentTile = newTile;
 
-        if( currentTile != null)
+        if ( currentTile != null )
             currentTile.setOccupier( this );
         else
             System.out.println( "Current Tile has been set to NULL" );
@@ -145,25 +150,19 @@ public abstract class Unit extends GameObject {
         return insideBuilding;
     }
 
-    public boolean isSelectable(){
+    public boolean isSelectable() {
         return !insideBuilding;
     }
 
-    private UnitTable debugTable;
-
-    private void initDebugTable(){
+    private void initDebugTable() {
         debugTable = new UnitTable( this );
     }
 
-    public UnitTable getDebugTable(){
-        if( debugTable == null)
+    public UnitTable getDebugTable() {
+        if ( debugTable == null )
             initDebugTable();
 
         return debugTable;
-    }
-
-    public static String getTAG() {
-        return TAG;
     }
 
     public Facing getCurrentFacing() {

@@ -22,9 +22,8 @@ import com.redtoorange.warbound.units.Builder;
  */
 public abstract class Building extends GameObject {
     public static final String TAG = Building.class.getSimpleName();
-
-    protected BuildingType TYPE = BuildingType.NONE;
     protected static final int STARTED = 0, PARTIAL = 1, COMPLETE = 2;
+    protected BuildingType TYPE = BuildingType.NONE;
     protected TextureRegion[] regions;
     protected BuildingController controller;
     protected PlayerController owner;
@@ -46,7 +45,10 @@ public abstract class Building extends GameObject {
         this.name = name;
         this.regions = regions;
 
-        sprite = new Sprite( regions[COMPLETE] );
+        sprite = new Sprite();
+
+        setRegion( COMPLETE );
+
         sprite.setAlpha( 0.5f );
         sprite.setSize( width, height );
         currentTiles = new MapTile[width][height];
@@ -69,7 +71,7 @@ public abstract class Building extends GameObject {
 
     @Override
     public void draw( SpriteBatch batch ) {
-        if ( validLocations )
+        if ( validLocations && sprite.getTexture() != null )
             sprite.draw( batch );
     }
 
@@ -97,7 +99,18 @@ public abstract class Building extends GameObject {
             setPosition( currentTiles[0][0].getWorldPosition() );
             paintTiles();
         }
+    }
 
+    public void instantBuild( MapTile tile ) {
+        setPosition( tile );
+
+        if ( placeBuilding() ) {
+            completeBuildingConstruction();
+        } else {
+            System.out.println( "!!Failed to spawn instant building!!" );
+            System.out.println( "\tWorld Pos: " + tile.getWorldPosition() );
+            System.out.println( "\tMap Pos: " + tile.getMapX() + "," + tile.getMapY() );
+        }
     }
 
     protected void setPosition( Vector2 pos ) {
@@ -136,7 +149,7 @@ public abstract class Building extends GameObject {
         if ( success ) {
             unpaintTiles();
 
-            sprite.setRegion( regions[STARTED] );
+            setRegion( STARTED );
             sprite.setAlpha( 1.0f );
             currentState = BuildingState.CONSTRUCTION_HALTED;
 
@@ -180,7 +193,6 @@ public abstract class Building extends GameObject {
     }
 
 
-
     /** Set the builder for the building and begin the construction. */
     public void beginBuildingConstruction( Builder builder ) {
         this.builder = builder;
@@ -199,11 +211,11 @@ public abstract class Building extends GameObject {
         }
     }
 
-    /** Update the building's state, eject the builder, update the UI.*/
+    /** Update the building's state, eject the builder, update the UI. */
     protected void completeBuildingConstruction() {
-        Gdx.app.log( TAG, "Complete!");
+        Gdx.app.log( TAG, "Complete!" );
 
-        sprite.setRegion( regions[COMPLETE] );
+        setRegion( COMPLETE );
         currentState = BuildingState.COMPLETE;
 
         if ( builder != null ) {
@@ -211,12 +223,12 @@ public abstract class Building extends GameObject {
             builder = null;
         }
 
-        if( controller.getCurrentBuilding() == this)
+        if ( controller.getCurrentBuilding() == this )
             controller.updateUI();
     }
 
 
-    /** Update the building's state, clear out tiles, eject the builder.*/
+    /** Update the building's state, clear out tiles, eject the builder. */
     public void cancelConstruction() {
         Gdx.app.log( TAG, "Cancelled." );
         currentState = BuildingState.CANCELLED;
@@ -254,11 +266,16 @@ public abstract class Building extends GameObject {
         return currentState == BuildingState.COMPLETE;
     }
 
-    public boolean isCancelled(){
+    public boolean isCancelled() {
         return currentState == BuildingState.CANCELLED;
     }
 
-    public BuildingType getType(){
+    public BuildingType getType() {
         return TYPE;
+    }
+
+    protected void setRegion( int REGION ) {
+        if ( REGION <= regions.length - 1 )
+            sprite.setRegion( regions[REGION] );
     }
 }

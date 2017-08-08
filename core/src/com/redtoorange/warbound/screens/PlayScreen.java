@@ -23,16 +23,12 @@ public class PlayScreen extends ScreenAdapter {
     public PlayScreen() {
         super();
 
-//        mapController = new MapController( 0, 0, 50, 50 );
         mapController = new MapController( "maps/map_1.tmx", 10, 10 );
-        playerController = new PlayerController( mapController);
+        playerController = new PlayerController( mapController );
         debugUI = new DebugUI( playerController, mapController );
     }
 
-    /**
-     *
-     * @param delta
-     */
+
     @Override
     public void render( float delta ) {
         super.render( delta );
@@ -41,15 +37,11 @@ public class PlayScreen extends ScreenAdapter {
         draw();
     }
 
-    /**
-     *
-     * @param deltaTime
-     */
-    private void update( float deltaTime ){
-        if( Gdx.input.isKeyJustPressed( Input.Keys.ESCAPE ) ) {
+    private void update( float deltaTime ) {
+        if ( Gdx.input.isKeyJustPressed( Input.Keys.ESCAPE ) ) {
             Gdx.app.exit();
         }
-        if( Gdx.input.isKeyJustPressed( Input.Keys.F2 ) ) {
+        if ( Gdx.input.isKeyJustPressed( Input.Keys.F2 ) ) {
             Constants.DEBUGGING = !Constants.DEBUGGING;
         }
 
@@ -58,19 +50,11 @@ public class PlayScreen extends ScreenAdapter {
         debugUI.update( deltaTime );
     }
 
-    /**
-     *
-     */
-    private void draw( ){
+    private void draw() {
         playerController.draw();
         debugUI.draw();
     }
 
-    /**
-     *
-     * @param width
-     * @param height
-     */
     @Override
     public void resize( int width, int height ) {
         super.resize( width, height );
@@ -78,9 +62,6 @@ public class PlayScreen extends ScreenAdapter {
         debugUI.resize( width, height );
     }
 
-    /**
-     *
-     */
     @Override
     public void show() {
         super.show();

@@ -3,6 +3,7 @@ package com.redtoorange.warbound.buildings;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.redtoorange.warbound.controllers.BuildingController;
+import com.redtoorange.warbound.map.MapTile;
 import com.redtoorange.warbound.utilities.Resource;
 
 /**
@@ -14,7 +15,7 @@ import com.redtoorange.warbound.utilities.Resource;
 public class Farm extends Building {
     public static final String TAG = Farm.class.getSimpleName();
 
-    protected static TextureRegion[] regions = {
+    protected static final TextureRegion[] farmRegions = {
             new TextureRegion( new Texture( "wc2_buildings/small_building_started.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/farm_building.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/farm.png" ) ),
@@ -23,7 +24,14 @@ public class Farm extends Building {
     protected int foodToAdd = 10;
 
     public Farm( String name, int width, int height, BuildingController controller ) {
-        super( name, regions, width, height, controller );
+        super( name, farmRegions, width, height, controller );
+        TYPE = BuildingType.FARM;
+    }
+
+    public Farm( String name, int width, int height, BuildingController controller, MapTile tile ) {
+        super( name, farmRegions, width, height, controller );
+
+        instantBuild( tile );
         TYPE = BuildingType.FARM;
     }
 

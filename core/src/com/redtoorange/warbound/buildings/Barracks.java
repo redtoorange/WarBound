@@ -17,7 +17,7 @@ import com.redtoorange.warbound.units.UnitType;
 public class Barracks extends Building {
     public static final String TAG = Barracks.class.getSimpleName();
 
-    protected static TextureRegion[] regions = {
+    protected static final TextureRegion[] barracksRegions = {
             new TextureRegion( new Texture( "wc2_buildings/large_building_started.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/barracks_building.png" ) ),
             new TextureRegion( new Texture( "wc2_buildings/barracks.png" ) ),
@@ -29,7 +29,13 @@ public class Barracks extends Building {
     protected float totalTime = 0.0f;
 
     public Barracks( String name, int width, int height, BuildingController controller ) {
-        super( name, regions, width, height, controller );
+        super( name, barracksRegions, width, height, controller );
+        TYPE = BuildingType.BARRACKS;
+    }
+
+    public Barracks( String name, int width, int height, BuildingController controller, MapTile tile ) {
+        super( name, barracksRegions, width, height, controller );
+        instantBuild( tile );
         TYPE = BuildingType.BARRACKS;
     }
 
@@ -94,7 +100,7 @@ public class Barracks extends Building {
         if ( tile != null ) {
             Unit createdUnit = UnitFactory.BuildUnit( unitBeingProduced, owner.getUnitController(), tile );
 
-            if( createdUnit != null )
+            if ( createdUnit != null )
                 owner.getUnitController().addUnit( createdUnit );
         }
     }

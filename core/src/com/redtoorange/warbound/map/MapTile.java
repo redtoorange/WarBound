@@ -6,8 +6,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.redtoorange.warbound.utilities.Constants;
 import com.redtoorange.warbound.GameObject;
+import com.redtoorange.warbound.utilities.Constants;
 
 /**
  * MapTile.java - Description
@@ -17,7 +17,6 @@ import com.redtoorange.warbound.GameObject;
  */
 public class MapTile {
     public static final String TAG = MapTile.class.getSimpleName();
-
 
     private final MapController controller;
     private final float worldX;
@@ -47,7 +46,7 @@ public class MapTile {
         sprite.setPosition( worldX, worldY );
     }
 
-    public MapTile( float worldX, float worldY, int mapX, int mapY, TextureRegion region, MapController controller, String type ) {
+    public MapTile( float worldX, float worldY, int mapX, int mapY, TextureRegion region, MapController controller, TileType type ) {
         this.controller = controller;
 
         this.worldX = worldX;
@@ -56,7 +55,7 @@ public class MapTile {
         this.mapX = mapX;
         this.mapY = mapY;
 
-        this.type = TileType.DIRT;
+        this.type = type;
 
         sprite = new Sprite( region );
         sprite.setSize( 1, 1 );
@@ -155,172 +154,173 @@ public class MapTile {
 
     /**
      * Pretty ham fisted way of finding a free tile with a weighted preference for direction then distance.
+     *
      * @param dirX
      * @param dirY
      * @return
      */
-    public MapTile getEmptyNeighbor( float dirX, float dirY, GameObject exclude) {
+    public MapTile getEmptyNeighbor( float dirX, float dirY, GameObject exclude ) {
         MapTile empty = null;
         MapTile nextBestCandidate = null;
 
         //From Below: DONE
-        if( dirX == 0 && dirY < 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX, mapY-1 );
+        if ( dirX == 0 && dirY < 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX, mapY - 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
         }
         //From Above: DONE
-        else if( dirX == 0 && dirY > 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX, mapY+1 );
+        else if ( dirX == 0 && dirY > 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX, mapY + 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
         }
         //From Right: DONE
-        else if( dirX > 0 && dirY == 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX+1, mapY );
+        else if ( dirX > 0 && dirY == 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX + 1, mapY );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
                 empty = controller.getTileByGridPos( mapX, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
                 empty = controller.getTileByGridPos( mapX, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
         }
         //From Left: DONE
-        else if( dirX < 0 && dirY == 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX-1, mapY );
+        else if ( dirX < 0 && dirY == 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX - 1, mapY );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
                 empty = controller.getTileByGridPos( mapX, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
                 empty = controller.getTileByGridPos( mapX, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
         }
 
         //From Top Right: DONE
-        else if( dirX > 0 && dirY > 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX+1, mapY+1 );
+        else if ( dirX > 0 && dirY > 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
         }
         //From Bottom Left: DONE
-        else if( dirX < 0 && dirY < 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX-1, mapY-1 );
+        else if ( dirX < 0 && dirY < 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
         }
         //From Top Left: DONE
-        else if( dirX < 0 && dirY > 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX-1, mapY+1 );
+        else if ( dirX < 0 && dirY > 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY-1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
         }
         //From Bottom Right
-        else if( dirX > 0 && dirY < 0){
-            nextBestCandidate = empty = controller.getTileByGridPos( mapX+1, mapY-1 );
+        else if ( dirX > 0 && dirY < 0 ) {
+            nextBestCandidate = empty = controller.getTileByGridPos( mapX + 1, mapY - 1 );
 
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY-1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX+1, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX, mapY+1 );
-            if( empty == null || (empty.blocked() && empty.getOccupier() != exclude) )
-                empty = controller.getTileByGridPos( mapX-1, mapY+1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY - 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX + 1, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX, mapY + 1 );
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) )
+                empty = controller.getTileByGridPos( mapX - 1, mapY + 1 );
         }
 
-        if (empty == null || (empty.blocked() && empty.getOccupier() != exclude)) {
-            empty = nextBestCandidate.getEmptyNeighbor( dirX, dirY, exclude);
+        if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) ) {
+            empty = nextBestCandidate.getEmptyNeighbor( dirX, dirY, exclude );
 
-            if (empty == null || (empty.blocked() && empty.getOccupier() != exclude)) {
+            if ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) ) {
                 for ( int i = 0; i < neighbors.size && ( empty == null || ( empty.blocked() && empty.getOccupier() != exclude ) ); i++ ) {
                     empty = neighbors.get( i ).getEmptyNeighbor( dirX, dirY, exclude );
                 }
@@ -330,18 +330,18 @@ public class MapTile {
         return empty;
     }
 
-    public MapTile getEmptyOutsideArea( int width, int height, int offsetX, int offsetY){
+    public MapTile getEmptyOutsideArea( int width, int height, int offsetX, int offsetY ) {
         MapTile empty = null;
 
-        for( int y = offsetY; y <= height && empty == null; y++){
-            for( int x = offsetX; x <= width && empty == null; x++){
+        for ( int y = offsetY; y <= height && empty == null; y++ ) {
+            for ( int x = offsetX; x <= width && empty == null; x++ ) {
                 MapTile t = controller.getTileByGridPos( mapX + x, mapY + y );
-                if( t != null && !t.blocked())
+                if ( t != null && !t.blocked() )
                     empty = t;
             }
         }
 
-        if( empty == null){
+        if ( empty == null ) {
             empty = getEmptyOutsideArea( width + 1, height + 1, offsetX - 1, offsetY - 1 );
         }
 

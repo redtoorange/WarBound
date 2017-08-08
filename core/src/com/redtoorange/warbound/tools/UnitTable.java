@@ -20,13 +20,13 @@ public class UnitTable extends DebugTable {
     private VisSlider speedSlider;
 
 
-    public UnitTable( Unit unit ){
+    public UnitTable( Unit unit ) {
         this.unit = unit;
 
         init();
     }
 
-    private void init(){
+    private void init() {
 
 
         //        builder.append( "\nCurrent Order: \t" );
@@ -40,7 +40,7 @@ public class UnitTable extends DebugTable {
         //        builder.append( "Current Facing: \t" );
         //        builder.append( currentFacing );
         add( "Current Facing:" );
-        facingField = new VisLabel( unit.getCurrentFacing().toString()  );
+        facingField = new VisLabel( unit.getCurrentFacing().toString() );
         add( facingField );
         row();
 
@@ -57,7 +57,7 @@ public class UnitTable extends DebugTable {
 
         row();
 
-        for( int i = 0; i < 15; i++){
+        for ( int i = 0; i < 15; i++ ) {
             add( "Test Label" );
             row();
         }
